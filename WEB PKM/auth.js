@@ -35,9 +35,13 @@
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
     script.async = true;
+    script.crossOrigin = 'anonymous';
     script.dataset.supabaseClient = 'true';
-    script.onload = () => window.supabase?.createClient ? resolve(window.supabase) : reject(new Error('Supabase JS gagal dimuat.'));
-    script.onerror = () => reject(new Error('Tidak dapat memuat Supabase JS. Pastikan internet aktif.'));
+    let settled = false;
+    const finish = (fn, value) => { if (settled) return; settled = true; fn(value); };
+    script.onload = () => window.supabase?.createClient ? finish(resolve, window.supabase) : finish(reject, new Error('Supabase JS gagal dimuat.'));
+    script.onerror = () => finish(reject, new Error('Tidak dapat memuat Supabase JS. Pastikan internet aktif.'));
+    setTimeout(() => finish(reject, new Error('Supabase JS terlalu lama dimuat.')), 12000);
     document.head.appendChild(script);
   });
 
@@ -204,7 +208,14 @@
       const url = avatarUrl(user);
       el.classList.toggle('has-photo', !!url);
       if (url) {
-        el.innerHTML = `<img src="${url}" alt="Foto profil ${escapeHtml(displayName)}">`;
+        el.textContent = '';
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = `Foto profil ${displayName}`;
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.style.cssText = 'position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;display:block!important;object-fit:cover!important;border-radius:50%!important;margin:0!important;padding:0!important;';
+        el.appendChild(img);
       } else {
         el.textContent = user ? initial : 'U';
       }

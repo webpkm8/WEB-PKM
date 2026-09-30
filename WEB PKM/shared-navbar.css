@@ -64,3 +64,10 @@
 @media(max-width:850px){
   .profile-menu{top:68px;right:15px;left:15px;width:auto;max-width:none}
 }
+
+/* Mobile/hosting hardening */
+html,body{width:100%;min-width:0;overflow-x:hidden}
+.site-navbar,.site-navbar-inner,.site-nav,.site-account{box-sizing:border-box}
+.account-avatar{position:relative!important;overflow:hidden!important;contain:paint!important;line-height:0!important;flex:0 0 26px!important}
+.account-avatar img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;object-fit:cover!important;display:block!important;margin:0!important;padding:0!important}
+@media(max-width:850px){.site-navbar-inner{max-width:100%;}.site-brand{min-width:0}.site-menu-toggle{flex:0 0 42px}}

@@ -1,0 +1,6 @@
+WEB PKM - HOSTING
+
+Untuk Netlify: upload isi folder WEB PKM ini (folder yang berisi index.html) sebagai publish directory.
+Untuk GitHub Pages: pertahankan struktur folder sesuai repository yang sekarang.
+
+Jika memakai Supabase, pastikan Site URL dan Redirect URLs di Supabase Authentication -> URL Configuration sudah memakai domain publik.

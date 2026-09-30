@@ -21,13 +21,13 @@
       const target = document.querySelector(id);
       if (target) {
         event.preventDefault();
-        closeMenu();
+        window.closeSiteMenu?.();
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
   });
 
   window.addEventListener('resize', () => {
-    if (window.innerWidth > 650) closeMenu();
+    if (window.innerWidth > 650) window.closeSiteMenu?.();
   });
 })();

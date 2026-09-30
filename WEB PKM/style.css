@@ -2291,3 +2291,7 @@ button {
     }
 
 }
+/* Hosting/mobile safety */
+html,body{min-width:0;width:100%;}
+main{display:block!important;visibility:visible!important;}
+@media(max-width:650px){.hero,.features,.about,.cta{visibility:visible;} .hero-container{min-width:0;} .hero-illustration{max-width:100%;}}

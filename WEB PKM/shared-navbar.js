@@ -3,6 +3,7 @@
   const nav = document.getElementById('siteNav');
   if (!button || !nav) return;
   const close = () => { nav.classList.remove('open'); button.setAttribute('aria-expanded','false'); };
+  window.closeSiteMenu = close;
   button.setAttribute('aria-expanded','false');
   button.addEventListener('click', e => {
     e.stopPropagation();
