@@ -12,7 +12,7 @@
 .site-nav a.active::after{content:"";position:absolute;left:0;right:0;bottom:15px;height:3px;border-radius:99px;background:#67b847}
 .site-account{min-width:104px;height:40px;padding:0 14px;border-radius:24px;display:flex!important;align-items:center;justify-content:center;gap:8px;text-decoration:none!important;color:#fff!important;background:linear-gradient(135deg,#6bc346,#54ad3c);box-shadow:0 7px 17px rgba(82,174,61,.2);font-size:12px!important;font-weight:700!important}
 .site-account:hover{color:#fff!important;transform:translateY(-1px)}
-.account-avatar{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.95);color:#54a83d;font-size:10px;font-weight:800;flex-shrink:0}
+.account-avatar{width:26px;height:26px;min-width:26px;min-height:26px;max-width:26px;max-height:26px;aspect-ratio:1/1;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.95);color:#54a83d;font-size:10px;font-weight:800;flex:0 0 26px;overflow:hidden;box-sizing:border-box;position:relative}
 .account-label{line-height:1}
 .site-menu-toggle{display:none;border:0;background:transparent;cursor:pointer;width:42px;height:42px;border-radius:10px}
 .site-menu-toggle span{display:block;width:24px;height:3px;margin:4px auto;border-radius:99px;background:#075b43}
@@ -60,7 +60,7 @@
 .profile-menu-note{font-size:10px;color:#8b9690;text-align:center;margin-top:9px;line-height:1.5}
 .profile-menu-status{font-size:11px;text-align:center;min-height:16px;color:#4f6e57}
 .account-avatar.has-photo{background:#fff;padding:0}
-.account-avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
+.account-avatar img{width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;max-width:26px!important;max-height:26px!important;display:block;object-fit:cover;object-position:center;border-radius:50%;margin:0;padding:0;box-sizing:border-box}
 @media(max-width:850px){
   .profile-menu{top:68px;right:15px;left:15px;width:auto;max-width:none}
 }

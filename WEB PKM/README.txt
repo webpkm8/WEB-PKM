@@ -35,3 +35,6 @@ UPDATE PERBAIKAN FITUR + NAVBAR (30 September 2026)
 - Navbar publik dan halaman fitur sekarang menggunakan satu desain bersama yang konsisten di desktop dan mobile.
 - Ikon akun ditambahkan. Saat login, ikon menampilkan inisial akun dan tombol berubah menjadi Logout.
 - Menu mobile menggunakan hamburger yang sama di seluruh halaman.
+
+
+PROFIL ICON FIX: ukuran foto profil navbar dikunci 26x26px, overflow dipotong, dan object-fit:cover agar foto tidak melebar/keluar dari tombol Logout.
