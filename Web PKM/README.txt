@@ -18,3 +18,10 @@ JIKA MASIH GAGAL:
 - Pastikan Email provider aktif.
 - Pastikan supabase_schema.sql sudah dijalankan.
 - Lihat pesan merah yang muncul di halaman daftar; pesan tersebut adalah error sebenarnya dari Supabase.
+
+RESET / GANTI PASSWORD:
+- login.html -> Lupa password -> Supabase mengirim email reset.
+- reset-password.html menerima link reset dan menyimpan password baru dengan Supabase Auth.
+- Untuk GitHub Pages, isi WEBPKM_PUBLIC_URL di site-config.js dengan URL publik website.
+- Tambahkan URL reset-password.html tersebut ke Supabase Authentication -> URL Configuration -> Redirect URLs.
+- Jangan memakai localhost jika link email akan dibuka dari HP.

@@ -6,7 +6,7 @@
   const SESSION_KEY = 'kasirTokoSupabaseSession';
   const CURRENT_KEY = 'kasirTokoCurrentUser';
   const LOGIN_KEY = 'kasirTokoLoggedIn';
-  const publicPages = ['index.html','login.html','register.html','panduan.html','tentang.html','kontak.html',''];
+  const publicPages = ['index.html','login.html','register.html','panduan.html','tentang.html','kontak.html','reset-password.html',''];
   const protectedPages = ['dashboard.html','kasir.html','produk.html','storage.html','buku-kas.html','perbandingan.html','scan-ingredient.html'];
   const file = (location.pathname.split('/').pop() || '').toLowerCase();
   let hydrating = false;
@@ -154,7 +154,9 @@
   }
 
   async function resetPassword(email) {
-    const redirectTo = `${location.origin}${location.pathname.replace(/[^/]*$/, '')}login.html`;
+    const configuredBase = String(window.WEBPKM_PUBLIC_URL || '').trim();
+    const base = configuredBase || `${location.origin}${location.pathname.replace(/[^/]*$/, '')}`;
+    const redirectTo = `${base.replace(/\/$/, '')}/reset-password.html`;
     const { error } = await client.auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo });
     if (error) throw error;
   }
