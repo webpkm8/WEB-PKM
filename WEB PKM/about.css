@@ -10,3 +10,325 @@ a{text-decoration:none;color:inherit}.container{width:min(100% - 80px,1140px);ma
 .about{padding:55px 0 72px}.about-grid{display:grid;grid-template-columns:1fr 350px;gap:60px;align-items:center}.section-title{display:flex;align-items:center;gap:14px}.title-mark{width:38px;height:38px;border-radius:50%;background:#eaf8dd}.section-title h2{color:var(--dark);font-size:31px}.about-text{max-width:620px;margin:15px 0 0 52px;font-size:14px}.slogan{color:#4b9e43;font-size:27px;line-height:1.05;font-weight:600;font-family:"Comic Sans MS",cursive;transform:rotate(-4deg)}.slogan span{display:block;width:160px;height:5px;margin:9px 0 0 47px;background:#e8ed27;border-radius:50%}.values{display:grid;grid-template-columns:repeat(3,1fr);gap:52px;margin-top:31px}.values article{display:grid;grid-template-columns:62px 1fr;gap:17px}.value-icon{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:#e9f8dc;font-size:27px}.values h3{margin-top:7px;color:#5ca441;font-size:17px}.values p{font-size:13px;margin-top:4px}
 footer{padding:25px;text-align:center;border-top:1px solid #edf1ed;font-size:12px}
 @media(max-width:720px){.container{width:min(100% - 30px,520px)}.navbar{height:72px}.brand-text{display:none}.brand-icon{width:42px;height:42px}.menu-toggle{display:block;margin-left:auto}.menu-toggle span{display:block;width:25px;height:3px;margin:5px;background:var(--dark);border-radius:5px}.nav-menu{position:absolute;display:none;top:72px;left:15px;right:15px;background:#fff;box-shadow:0 12px 30px #0002;border-radius:14px;padding:8px 18px;flex-direction:column;gap:0}.nav-menu.open{display:flex}.nav-menu a{padding:12px 5px;border-bottom:1px solid #f0f2ef}.nav-menu .login-button{border-bottom:0}.nav-menu a.active:after{display:none}.nav-menu .login-button{min-width:82px;height:38px;padding:0 18px!important;font-size:12px;margin-top:8px;text-align:center;border:0}.hero-grid{display:flex;flex-direction:column}.hero-copy{padding:38px 0 8px}.hero h1{font-size:45px}.hero h2{font-size:25px}.hero p{font-size:13px}.hero-art{height:240px;width:100%}.illustration{transform:scale(.72);flex-shrink:0}.about{padding:45px 0 55px}.about-grid{grid-template-columns:1fr;gap:25px}.about-text{margin-left:0;font-size:13px}.section-title h2{font-size:27px}.slogan{margin-left:20px}.values{grid-template-columns:1fr;gap:23px;margin-top:10px}}
+
+
+/* =========================
+   TIM KAMI
+========================= */
+.team-section{margin-top:72px;padding-top:8px}
+.team-heading{text-align:center;margin-bottom:34px}
+.team-heading .eyebrow{margin-bottom:10px}
+.team-heading h2{color:var(--dark);font-size:32px;line-height:1.2}
+.team-heading p{margin-top:7px;font-size:13px;color:#7b8582}
+.team-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:24px}
+.team-card{background:#fff;border:1px solid #e7eee4;border-radius:20px;padding:24px 18px 22px;text-align:center;box-shadow:0 8px 24px rgba(27,75,42,.06);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.team-card:hover{transform:translateY(-5px);box-shadow:0 14px 30px rgba(27,75,42,.10);border-color:#bfe5ae}
+.team-photo{width:132px;height:132px;margin:0 auto 17px;border-radius:50%;overflow:hidden;background:#eff9e4;border:6px solid #f3faee;box-shadow:0 5px 18px rgba(30,95,52,.10)}
+.team-photo img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
+.team-card h3{margin:0;color:#174f3e;font-size:16px;line-height:1.35}
+.team-card>span{display:block;margin-top:5px;color:#67ad4c;font-size:12px;font-weight:600}
+
+@media(max-width:900px){
+  .team-grid{grid-template-columns:repeat(2,1fr);gap:20px}
+}
+@media(max-width:720px){
+  .team-section{margin-top:55px}
+  .team-heading h2{font-size:27px}
+  .team-grid{grid-template-columns:repeat(2,1fr);gap:14px}
+  .team-card{padding:18px 10px}
+  .team-photo{width:105px;height:105px;margin-bottom:13px}
+  .team-card h3{font-size:14px}
+  .team-card>span{font-size:11px}
+}
+@media(max-width:430px){
+  .team-grid{grid-template-columns:1fr}
+  .team-card{max-width:280px;width:100%;margin:0 auto}
+}
+
+/* 5 anggota: 3 kartu di baris pertama, 2 kartu di baris kedua dan berada di tengah */
+.team-grid .team-card{grid-column:span 2}
+.team-grid .team-card:nth-child(4){grid-column:2 / span 2}
+.team-grid .team-card:nth-child(5){grid-column:4 / span 2}
+@media(max-width:900px){
+  .team-grid{grid-template-columns:repeat(2,1fr)}
+  .team-grid .team-card,.team-grid .team-card:nth-child(4),.team-grid .team-card:nth-child(5){grid-column:auto}
+}
+@media(max-width:430px){
+  .team-grid{grid-template-columns:1fr}
+}
+
+/* =====================================================
+   TIM KAMI — DESAIN LEBIH MODERN & PROFESIONAL
+===================================================== */
+.team-section{
+  position:relative;
+  margin-top:78px;
+  padding:58px 0 8px;
+}
+.team-section::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:0;
+  width:92px;
+  height:4px;
+  transform:translateX(-50%);
+  border-radius:99px;
+  background:linear-gradient(90deg,#9bd86e,#57b441);
+}
+.team-heading{max-width:650px;margin:0 auto 38px;text-align:center}
+.team-heading .eyebrow{
+  padding:6px 15px;
+  border:1px solid #dcefd1;
+  background:#f2faeb;
+  letter-spacing:.2px;
+}
+.team-heading h2{
+  margin-top:12px;
+  color:#075b43;
+  font-size:34px;
+  font-weight:800;
+  letter-spacing:-.5px;
+}
+.team-heading p{margin-top:9px;font-size:14px;color:#7a8580}
+
+.team-grid{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:22px;
+  align-items:stretch;
+}
+.team-card{
+  grid-column:span 2;
+  position:relative;
+  overflow:hidden;
+  min-height:300px;
+  padding:26px 20px 24px;
+  text-align:center;
+  border:1px solid #e4eee0;
+  border-radius:24px;
+  background:linear-gradient(180deg,#ffffff 0%,#fbfef9 100%);
+  box-shadow:0 10px 30px rgba(20,75,42,.07);
+  transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;
+}
+.team-card::before{
+  content:"";
+  position:absolute;
+  left:0;right:0;top:0;
+  height:5px;
+  background:linear-gradient(90deg,#72c84f,#4ea93c);
+}
+.team-card::after{
+  content:"";
+  position:absolute;
+  width:110px;height:110px;
+  right:-58px;top:-58px;
+  border-radius:50%;
+  background:#eff9e6;
+}
+.team-card:hover{
+  transform:translateY(-7px);
+  border-color:#c9e7bd;
+  box-shadow:0 18px 38px rgba(20,75,42,.12);
+}
+.team-card:nth-child(4){grid-column:2 / span 2}
+.team-card:nth-child(5){grid-column:4 / span 2}
+
+.team-photo{
+  position:relative;
+  z-index:1;
+  width:142px;height:142px;
+  margin:2px auto 18px;
+  padding:5px;
+  border:1px solid #d9ebd1;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 8px 22px rgba(35,105,54,.12);
+}
+.team-photo::before{
+  content:"";
+  position:absolute;
+  inset:-5px;
+  border:2px solid #a9d991;
+  border-radius:50%;
+  opacity:.45;
+}
+.team-photo img{
+  width:100%;height:100%;
+  display:block;
+  object-fit:cover;
+  object-position:center;
+  border-radius:50%;
+}
+.team-card h3{
+  position:relative;
+  z-index:1;
+  margin:0;
+  color:#174f3e;
+  font-size:17px;
+  font-weight:700;
+  line-height:1.35;
+}
+.team-card>span{
+  position:relative;
+  z-index:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:9px;
+  padding:6px 13px;
+  border-radius:999px;
+  color:#559f40;
+  background:#eff9e7;
+  border:1px solid #dcefd4;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.15px;
+}
+
+@media(max-width:900px){
+  .team-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  .team-card,.team-card:nth-child(4),.team-card:nth-child(5){grid-column:auto}
+  .team-card{min-height:285px}
+}
+@media(max-width:720px){
+  .team-section{margin-top:58px;padding-top:48px}
+  .team-heading{margin-bottom:28px}
+  .team-heading h2{font-size:28px}
+  .team-heading p{font-size:13px}
+  .team-grid{gap:14px}
+  .team-card{min-height:265px;padding:21px 12px 20px;border-radius:20px}
+  .team-photo{width:112px;height:112px;margin-bottom:15px}
+  .team-card h3{font-size:14px}
+  .team-card>span{font-size:10px;padding:5px 10px}
+}
+@media(max-width:430px){
+  .team-grid{grid-template-columns:1fr;gap:15px}
+  .team-card,.team-card:nth-child(4),.team-card:nth-child(5){grid-column:auto}
+  .team-card{width:100%;max-width:310px;min-height:255px;margin:0 auto;padding:22px 18px}
+  .team-photo{width:118px;height:118px}
+}
+
+/* =====================================================
+   TIM KAMI — 5 BERJAJAR, KARTU LEBIH RAMPING & TINGGI
+===================================================== */
+.team-grid{
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:16px !important;
+  align-items:stretch;
+}
+.team-card,
+.team-grid .team-card,
+.team-grid .team-card:nth-child(4),
+.team-grid .team-card:nth-child(5){
+  grid-column:auto !important;
+  min-width:0;
+  min-height:365px;
+  height:365px;
+  padding:22px 14px 24px;
+  border-radius:14px;
+}
+.team-card::after{display:none}
+.team-photo{
+  width:100% !important;
+  height:205px !important;
+  margin:0 auto 18px !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:10px !important;
+  background:#eff9e4;
+  box-shadow:none !important;
+  overflow:hidden;
+}
+.team-photo::before{display:none !important}
+.team-photo img{
+  width:100% !important;
+  height:100% !important;
+  border-radius:10px !important;
+  object-fit:cover;
+  object-position:center;
+}
+.team-card h3{font-size:16px;line-height:1.35}
+.team-card>span{
+  margin-top:8px;
+  padding:5px 10px;
+  border-radius:7px;
+  font-size:11px;
+}
+
+@media(max-width:1000px){
+  .team-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:16px !important}
+  .team-card,.team-grid .team-card,.team-grid .team-card:nth-child(4),.team-grid .team-card:nth-child(5){min-height:350px;height:350px}
+  .team-photo{height:190px !important}
+}
+@media(max-width:720px){
+  .team-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:14px !important}
+  .team-card,.team-grid .team-card,.team-grid .team-card:nth-child(4),.team-grid .team-card:nth-child(5){height:330px;min-height:330px;padding:18px 10px 20px;border-radius:12px}
+  .team-photo{height:175px !important;margin-bottom:14px !important;border-radius:9px !important}
+  .team-photo img{border-radius:9px !important}
+  .team-card h3{font-size:14px}
+  .team-card>span{font-size:10px}
+}
+@media(max-width:430px){
+  .team-grid{grid-template-columns:1fr !important;gap:15px !important}
+  .team-card,.team-grid .team-card,.team-grid .team-card:nth-child(4),.team-grid .team-card:nth-child(5){width:100%;max-width:290px;height:340px;min-height:340px;margin:0 auto}
+  .team-photo{height:190px !important}
+}
+
+/* =====================================================
+   TIM KAMI — FOTO LEBIH BESAR & LEBIH TINGGI
+===================================================== */
+.team-card,
+.team-grid .team-card,
+.team-grid .team-card:nth-child(4),
+.team-grid .team-card:nth-child(5){
+  min-height:425px;
+  height:425px;
+  padding:22px 14px 24px;
+}
+.team-photo{
+  width:100% !important;
+  height:255px !important;
+  margin:0 auto 18px !important;
+  border-radius:10px !important;
+  overflow:hidden !important;
+}
+.team-photo img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  object-position:center !important;
+  border-radius:10px !important;
+}
+@media(max-width:1000px){
+  .team-card,
+  .team-grid .team-card,
+  .team-grid .team-card:nth-child(4),
+  .team-grid .team-card:nth-child(5){
+    min-height:410px;
+    height:410px;
+  }
+  .team-photo{height:235px !important}
+}
+@media(max-width:720px){
+  .team-card,
+  .team-grid .team-card,
+  .team-grid .team-card:nth-child(4),
+  .team-grid .team-card:nth-child(5){
+    height:370px;
+    min-height:370px;
+    padding:18px 10px 20px;
+  }
+  .team-photo{height:215px !important;margin-bottom:14px !important}
+}
+@media(max-width:430px){
+  .team-card,
+  .team-grid .team-card,
+  .team-grid .team-card:nth-child(4),
+  .team-grid .team-card:nth-child(5){
+    height:390px;
+    min-height:390px;
+    max-width:310px;
+  }
+  .team-photo{height:235px !important}
+}
