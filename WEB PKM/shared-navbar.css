@@ -71,3 +71,12 @@ html,body{width:100%;min-width:0;overflow-x:hidden}
 .account-avatar{position:relative!important;overflow:hidden!important;contain:paint!important;line-height:0!important;flex:0 0 26px!important}
 .account-avatar img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;object-fit:cover!important;display:block!important;margin:0!important;padding:0!important}
 @media(max-width:850px){.site-navbar-inner{max-width:100%;}.site-brand{min-width:0}.site-menu-toggle{flex:0 0 42px}}
+.profile-menu-business{margin-top:5px;font-size:10px;font-weight:800;color:#4b9344;word-break:break-word}
+
+/* Separate account controls: Profil is independent from Masuk/Keluar. */
+.site-profile{height:40px;min-width:40px;padding:0 12px;border-radius:22px;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none!important;background:#f2f9ed;border:1px solid #dcefd4;color:#3f8e39!important;font:700 12px Poppins,Arial,sans-serif;box-sizing:border-box;cursor:pointer}
+.site-profile:hover{background:#e9f6e2;color:#327c31!important}
+.site-profile .account-avatar{width:26px;height:26px;flex:0 0 26px}
+.site-logout{min-width:82px!important;background:linear-gradient(135deg,#6bc346,#54ad3c)!important}
+.profile-label{line-height:1}
+@media(max-width:850px){.site-nav .site-profile,.site-nav .site-logout{width:100%;justify-content:center;margin-top:8px}.site-nav .site-logout{margin-bottom:4px}}

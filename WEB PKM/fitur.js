@@ -1,5 +1,4 @@
 (() => {
-  // Navbar ditangani oleh shared-navbar.js agar konsisten di semua halaman.
   document.querySelectorAll('.tool-card[data-page]').forEach(card => {
     card.setAttribute('tabindex', '0');
     card.setAttribute('role', 'button');
@@ -11,6 +10,11 @@
         if (!window.KasirAuth?.current()) {
           sessionStorage.setItem('kasirTokoAfterLogin', page);
           window.location.href = 'login.html';
+          return;
+        }
+        if (window.KasirAuth.isUmkm?.() && page !== 'storage.html') {
+          const title = card.querySelector('h2')?.textContent?.trim() || 'fitur ini';
+          alert(`Akun UMKM hanya dapat membuka Storage Produk. ${title} hanya tersedia untuk Owner Usaha.`);
           return;
         }
         window.location.href = page;
@@ -27,15 +31,7 @@
   });
 
   window.openTool = async function(tool) {
-    const pages = {
-      barcode: 'produk.html',
-      kasir: 'kasir.html',
-      dashboard: 'dashboard.html',
-      storage: 'storage.html',
-      'buku-kas': 'buku-kas.html',
-      keuntungan: 'perbandingan.html',
-      ingredients: 'scan-ingredient.html'
-    };
+    const pages = { barcode:'produk.html', kasir:'kasir.html', dashboard:'dashboard.html', storage:'storage.html', 'buku-kas':'buku-kas.html', keuntungan:'perbandingan.html', ingredients:'scan-ingredient.html' };
     const page = pages[tool];
     if (!page) return;
     try {
@@ -43,6 +39,10 @@
       if (!window.KasirAuth?.current()) {
         sessionStorage.setItem('kasirTokoAfterLogin', page);
         window.location.href = 'login.html';
+        return;
+      }
+      if (window.KasirAuth.isUmkm?.() && page !== 'storage.html') {
+        alert('Akun UMKM hanya dapat membuka Storage Produk.');
         return;
       }
       window.location.href = page;

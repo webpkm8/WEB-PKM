@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="login.css">
 <script src="site-config.js"></script>
 <script src="auth.js"></script>
+<style>.helper-text{display:block;color:#748378;font-size:10px;line-height:1.4;margin-top:5px}</style>
 </head>
 <body>
 <main class="login-page">
@@ -21,6 +22,14 @@
     <p>Silahkan login untuk melanjutkan ke akun anda</p>
   </section>
   <form class="login-card" id="loginForm" novalidate>
+    <div class="form-group login-type-group">
+      <label>Login sebagai</label>
+      <div class="login-type-options" role="group" aria-label="Pilih jenis akun">
+        <button type="button" class="login-type active" data-login-role="owner" aria-pressed="true">Owner Usaha</button>
+        <button type="button" class="login-type" data-login-role="umkm" aria-pressed="false">UMKM</button>
+      </div>
+      <small class="helper-text" id="loginRoleHelper">Owner cukup menggunakan email dan password. Tidak perlu kode usaha.</small>
+    </div>
     <div class="form-group">
       <label for="email">Email</label>
       <div class="input-wrapper">
@@ -28,6 +37,12 @@
         <input type="email" id="email" name="email" placeholder="Masukan email anda" autocomplete="email">
       </div>
       <small class="error-message" id="emailError"></small>
+    </div>
+    <div class="form-group" id="businessCodeGroup" hidden>
+      <label for="businessCode">Kode Usaha</label>
+      <div class="input-wrapper"><span class="input-icon">⌘</span><input type="text" id="businessCode" placeholder="Masukkan kode usaha Owner" autocomplete="off" autocapitalize="characters"></div>
+      <small class="helper-text" id="businessCodeHelper">Masukkan kode usaha milik Owner yang menghubungkan akun UMKM ini.</small>
+      <small class="error-message" id="businessCodeError"></small>
     </div>
     <div class="form-group">
       <label for="password">Password</label>

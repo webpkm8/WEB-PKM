@@ -2,17 +2,21 @@
 <html lang="id">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Web PKM — Daftar</title>
+<title>Our Journey — Daftar</title>
 <link rel="icon" type="image/png" href="ikon.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="register.css"><script src="auth.js"></script>
+<style>
+.account-type{margin-bottom:12px}.type-label{display:block;font-weight:700;font-size:13px;margin-bottom:7px}.type-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}.type-option{display:block}.type-option input{display:none}.type-option span{display:block;padding:11px 12px;border:1.5px solid #dcebdd;border-radius:12px;text-align:center;font-weight:700;cursor:pointer}.type-option input:checked+span{border-color:#55b94f;background:#edf9e9;color:#328f46}.business-code-box{padding:11px 13px;margin:12px 0;background:#f4fbe9;border:1px dashed #8bcf72;border-radius:12px;font-size:11px;color:#477044}.business-code-box b,.business-code-box span{display:block}.business-code-box span{margin-top:3px;line-height:1.45}</style>
 </head>
 <body>
 <main class="register-page">
   <section class="register-card">
-    <a class="brand" href="index.html"><img src="logo.png" alt="Web PKM"><span>Web PKM</span></a>
+    <a class="brand" href="index.html"><img src="logo.png" alt="Web PKM"><span>Our Journey</span></a>
     <div class="heading"><span class="eyebrow">AKUN BARU</span><h1>Daftar sekarang</h1><p>Buat akun. Data produk, transaksi, stok, dan buku kas akan tersimpan terpisah untuk akun ini.</p></div>
     <form id="registerForm" novalidate>
+      <div class="account-type"><span class="type-label">Jenis akun</span><div class="type-options"><label class="type-option"><input type="radio" name="accountType" value="owner" checked><span>Owner Usaha</span></label><label class="type-option"><input type="radio" name="accountType" value="umkm"><span>UMKM</span></label></div></div>
+      <div id="ownerFields"><label>Nama usaha<input id="businessName" type="text" autocomplete="organization" placeholder="Contoh: Toko Rahmat"></label><small id="businessNameError" class="error"></small></div>
       <label>Nama lengkap<input id="fullName" type="text" autocomplete="name" placeholder="Masukkan nama lengkap"></label>
       <small id="nameError" class="error"></small>
       <label>Email<input id="email" type="email" autocomplete="email" placeholder="Masukkan email aktif"></label>
@@ -21,6 +25,7 @@
       <small id="passwordError" class="error"></small>
       <label>Konfirmasi password<input id="confirmPassword" type="password" autocomplete="new-password" placeholder="Ulangi password"></label>
       <small id="confirmError" class="error"></small>
+      <div id="ownerCodeBox" class="business-code-box"><b>Kode usaha akan dibuat otomatis</b><span>Kode ini wajib diberikan kepada anggota UMKM yang ingin terhubung ke usaha kamu.</span></div>
       <button id="registerButton" type="submit">Buat Akun</button>
       <p id="registerStatus" class="auth-status" aria-live="polite"></p>
     </form>

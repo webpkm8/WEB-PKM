@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil Saya - Web PKM</title>
+  <link rel="stylesheet" href="shared-navbar.css">
+  <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+  <main class="profile-page">
+    <div class="profile-shell">
+      <header class="profile-header">
+        <a class="profile-back" href="index.html" aria-label="Kembali ke beranda">← <span>Beranda</span></a>
+        <div class="profile-heading">
+          <span class="heading-kicker">AKUN SAYA</span>
+          <h1>Profil Saya</h1>
+          <p>Kelola informasi pribadi dan lihat koneksi usaha Anda.</p>
+        </div>
+      </header>
+
+      <section class="profile-layout">
+        <!-- Kartu identitas akun -->
+        <article class="identity-card">
+          <div class="identity-cover"></div>
+          <div class="identity-content">
+            <div class="avatar-wrap">
+              <div class="profile-avatar-large" data-profile-avatar-large aria-label="Foto profil">U</div>
+              <button type="button" class="avatar-edit" id="change-photo-top" aria-label="Ganti foto profil">✎</button>
+            </div>
+            <div class="identity-main">
+              <span class="role-badge" data-profile-role>Owner Usaha</span>
+              <h2 data-profile-name>Akun</h2>
+              <p data-profile-email>-</p>
+            </div>
+            <div class="identity-status"><span></span> Akun aktif</div>
+          </div>
+          <div class="identity-footer">
+            <div><small>Nama akun</small><strong data-info-name>-</strong></div>
+            <div><small>Email</small><strong data-info-email>-</strong></div>
+          </div>
+        </article>
+
+        <div class="profile-side">
+          <!-- Edit profil -->
+          <article class="panel-card">
+            <div class="panel-title">
+              <div class="panel-icon">✦</div>
+              <div><h3>Informasi Profil</h3><p>Informasi ini hanya milik akun Anda.</p></div>
+            </div>
+            <div class="form-row">
+              <label for="profile-name-input">Nama akun</label>
+              <input id="profile-name-input" type="text" maxlength="80" placeholder="Masukkan nama Anda" autocomplete="name">
+            </div>
+            <div class="form-row readonly-field">
+              <label>Email</label>
+              <div class="readonly-value" data-form-email>-</div>
+              <span class="field-lock">Terkunci</span>
+            </div>
+            <div class="profile-actions">
+              <button class="profile-btn primary" id="save-profile">Simpan Perubahan</button>
+              <button class="profile-btn secondary" id="change-photo">Ganti Foto Profil</button>
+            </div>
+            <input id="profile-photo-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+            <div class="profile-status" id="profile-status" role="status" aria-live="polite"></div>
+          </article>
+
+          <!-- Informasi usaha terpisah -->
+          <article class="panel-card business-card">
+            <div class="panel-title">
+              <div class="panel-icon business-icon">⌂</div>
+              <div><h3>Usaha Terhubung</h3><p>Informasi usaha dipisahkan dari profil pribadi.</p></div>
+            </div>
+            <div class="business-info">
+              <div class="business-row">
+                <span>Jenis akun</span>
+                <strong data-info-role>Owner Usaha</strong>
+              </div>
+              <div class="business-row">
+                <span>Nama usaha</span>
+                <strong data-info-business>Belum terhubung</strong>
+              </div>
+              <div class="business-row code-row">
+                <span>Kode usaha</span>
+                <strong data-info-code>Belum terhubung</strong>
+              </div>
+            </div>
+            <div class="business-note">Data usaha tetap mengikuti Owner. Perubahan foto dan nama profil tidak mengubah data usaha.</div>
+          </article>
+        </div>
+      </section>
+
+      <section class="profile-bottom">
+        <div class="help-card">
+          <div class="help-icon">✓</div>
+          <div><strong>Profil Anda aman dan terpisah</strong><p>Foto, nama, dan email mengikuti akun yang sedang login. Akun lain tidak menggunakan profil ini.</p></div>
+        </div>
+        <button class="logout-card" id="logout-profile" type="button"><span>↪</span><div><strong>Keluar dari akun</strong><small>Logout dari Web PKM</small></div></button>
+      </section>
+    </div>
+  </main>
+  <script src="auth.js"></script>
+  <script src="profile.js"></script>
+</body>
+</html>
