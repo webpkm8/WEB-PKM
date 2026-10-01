@@ -1,6 +1,7 @@
 <!doctype html><html lang="id"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>KasirToko — Storage Penyimpanan</title>
+<link rel="icon" type="image/png" href="ikon.png">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -113,7 +114,34 @@ function formatIngredients(list){return (list||[]).map(i=>i.qty?`${i.name}: ${i.
 function loadForm(){const p=products.find(x=>x.id===selectedId);if(!p)return;$('owner').value=p.owner||'';$('stock').value=p.stock??0;$('reorder').value=p.reorder??3;$('ingredients').value=formatIngredients(p.ingredients)}
 function populate(){const s=$('product');s.innerHTML=products.map(p=>`<option value="${esc(p.id)}">${esc(p.name)} · ${esc(p.barcode)}</option>`).join('');if(!products.length){s.innerHTML='<option value="">Belum ada produk</option>';$('owner').value='';$('stock').value='';$('reorder').value='3';$('ingredients').value='';return}if(!selectedId||!products.some(p=>p.id===selectedId))selectedId=products[0].id;s.value=selectedId;loadForm()}
 $('product').addEventListener('change',e=>{selectedId=e.target.value;loadForm()});
-$('saveStorage').addEventListener('click',()=>{const p=products.find(x=>x.id===selectedId);if(!p)return toast('Buat produk terlebih dahulu di halaman Produk.');if(umkm){p.ingredients=parseIngredients($('ingredients').value);save(STORE.products,products);render();toast('Ingredient berhasil diperbarui ✅');return;}p.owner=$('owner').value.trim();p.stock=Math.max(0,Number($('stock').value)||0);p.reorder=Math.max(0,Number($('reorder').value)||0);p.ingredients=parseIngredients($('ingredients').value);save(STORE.products,products);render();toast('Data storage berhasil disimpan ✅')});
+$('saveStorage').addEventListener('click',async()=>{
+  const p=products.find(x=>x.id===selectedId);
+  if(!p)return toast('Buat produk terlebih dahulu di halaman Produk.');
+  const btn=$('saveStorage');
+  btn.disabled=true;
+  try{
+    if(umkm){
+      const ingredients=parseIngredients($('ingredients').value);
+      const {error}=await KasirAuth.client.rpc('update_product_ingredients',{p_product_id:String(p.id),p_ingredients:ingredients});
+      if(error)throw error;
+      p.ingredients=ingredients;
+      KasirAuth.writeLocalOnly(STORE.products,products);
+      render();
+      toast('Ingredient berhasil diperbarui ✅');
+      return;
+    }
+    p.owner=$('owner').value.trim();
+    p.stock=Math.max(0,Number($('stock').value)||0);
+    p.reorder=Math.max(0,Number($('reorder').value)||0);
+    p.ingredients=parseIngredients($('ingredients').value);
+    save(STORE.products,products);
+    render();
+    toast('Data storage berhasil disimpan ✅');
+  }catch(e){
+    console.error(e);
+    toast(e?.message||'Gagal menyimpan data.');
+  }finally{btn.disabled=false;}
+});
 function render(){const rows=$('rows'),alerts=$('alerts');rows.innerHTML='';let low=0;products.forEach(p=>{const isLow=Number(p.stock||0)<=Number(p.reorder||0);if(isLow)low++;const tr=document.createElement('tr');tr.innerHTML=`<td><b>${esc(p.name)}</b><div class="small">${esc(p.barcode)}</div></td><td>${esc(p.owner||'Belum diatur')}</td><td><span class="stock-num ${isLow?'stock-low':''}">${p.stock}</span></td><td>${p.reorder}</td><td><span class="badge ${isLow?'warn':'good'}">${isLow?'Perlu Restok':'Aman'}</span></td><td>${p.ingredients?.length?esc(formatIngredients(p.ingredients)):'<span class="small">Belum diisi</span>'}</td><td><button class="btn secondary edit-stock">${umkm?'Edit Ingredient':'Edit'}</button></td>`;tr.querySelector('.edit-stock').onclick=()=>{selectedId=p.id;$('product').value=p.id;loadForm();window.scrollTo({top:0,behavior:'smooth'})};rows.appendChild(tr)});$('empty').style.display=products.length?'none':'block';$('lowTag').textContent=`${low} stok rendah`;alerts.innerHTML=low?`<div class="alert">⚠️ <span><b>${low} produk</b> berada di bawah atau sama dengan batas minimum stok.</span></div>`:''}
 window.addEventListener('storage',()=>{products=load(STORE.products,[]).map(normalize);if(!products.some(p=>p.id===selectedId))selectedId=products[0]?.id||'';populate();render()});populate();render();
 });

@@ -28,6 +28,7 @@ create policy "business_select_member" on public.businesses for select using (
 );
 
 -- Shared user_data is keyed by business, not by individual account.
+-- The Owner is the writer of shared business data; UMKM is read-only except for ingredients via RPC.
 alter table public.user_data add column if not exists business_id uuid references public.businesses(id) on delete cascade;
 
 -- Backfill existing rows when profiles/businesses already exist.
@@ -48,21 +49,102 @@ drop policy if exists "user_data_select_business" on public.user_data;
 drop policy if exists "user_data_insert_business" on public.user_data;
 drop policy if exists "user_data_update_business" on public.user_data;
 drop policy if exists "user_data_delete_business" on public.user_data;
+drop policy if exists "user_data_insert_owner" on public.user_data;
+drop policy if exists "user_data_update_owner" on public.user_data;
+drop policy if exists "user_data_delete_owner" on public.user_data;
 
 create policy "user_data_select_business" on public.user_data for select using (
-  business_id is not null and exists (select 1 from public.profiles p where p.user_id = auth.uid() and p.business_id = user_data.business_id)
+  business_id is not null and exists (
+    select 1 from public.profiles p where p.user_id = auth.uid() and p.business_id = user_data.business_id
+  )
 );
-create policy "user_data_insert_business" on public.user_data for insert with check (
-  business_id is not null and exists (select 1 from public.profiles p where p.user_id = auth.uid() and p.business_id = user_data.business_id)
+
+-- Only Owner may create/change/delete shared business data.
+-- UMKM gets read access above and changes ingredients through the restricted RPC below.
+create policy "user_data_insert_owner" on public.user_data for insert with check (
+  business_id is not null and exists (
+    select 1 from public.profiles p
+    where p.user_id = auth.uid() and p.business_id = user_data.business_id and p.role = 'owner'
+  )
 );
-create policy "user_data_update_business" on public.user_data for update using (
-  business_id is not null and exists (select 1 from public.profiles p where p.user_id = auth.uid() and p.business_id = user_data.business_id)
+create policy "user_data_update_owner" on public.user_data for update using (
+  business_id is not null and exists (
+    select 1 from public.profiles p
+    where p.user_id = auth.uid() and p.business_id = user_data.business_id and p.role = 'owner'
+  )
 ) with check (
-  business_id is not null and exists (select 1 from public.profiles p where p.user_id = auth.uid() and p.business_id = user_data.business_id)
+  business_id is not null and exists (
+    select 1 from public.profiles p
+    where p.user_id = auth.uid() and p.business_id = user_data.business_id and p.role = 'owner'
+  )
 );
-create policy "user_data_delete_business" on public.user_data for delete using (
-  business_id is not null and exists (select 1 from public.profiles p where p.user_id = auth.uid() and p.business_id = user_data.business_id)
+create policy "user_data_delete_owner" on public.user_data for delete using (
+  business_id is not null and exists (
+    select 1 from public.profiles p
+    where p.user_id = auth.uid() and p.business_id = user_data.business_id and p.role = 'owner'
+  )
 );
+
+-- UMKM can edit ONLY the ingredients field of an existing product.
+create or replace function public.update_product_ingredients(p_product_id text, p_ingredients jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  me uuid := auth.uid();
+  biz uuid;
+  products_value jsonb;
+  updated_products jsonb;
+  found_product boolean := false;
+begin
+  if me is null then raise exception 'Anda belum login.'; end if;
+  if jsonb_typeof(coalesce(p_ingredients, '[]'::jsonb)) <> 'array' then
+    raise exception 'Ingredient harus berupa daftar.';
+  end if;
+
+  select business_id into biz
+  from public.profiles
+  where user_id = me and role = 'umkm';
+
+  if biz is null then raise exception 'Fungsi ini hanya untuk akun UMKM yang sudah terhubung.'; end if;
+
+  select value into products_value
+  from public.user_data
+  where business_id = biz and key = 'products'
+  for update;
+
+  if products_value is null or jsonb_typeof(products_value) <> 'array' then
+    raise exception 'Data produk belum tersedia.';
+  end if;
+
+  updated_products := (
+    select jsonb_agg(
+      case
+        when elem->>'id' = p_product_id then
+          jsonb_set(elem, '{ingredients}', p_ingredients, true)
+        else elem
+      end
+    )
+    from jsonb_array_elements(products_value) elem
+  );
+
+  select exists (
+    select 1 from jsonb_array_elements(products_value) elem where elem->>'id' = p_product_id
+  ) into found_product;
+
+  if not found_product then raise exception 'Produk tidak ditemukan.'; end if;
+
+  update public.user_data
+  set value = coalesce(updated_products, '[]'::jsonb), updated_at = now()
+  where business_id = biz and key = 'products';
+
+  return jsonb_build_object('business_id', biz, 'product_id', p_product_id, 'ingredients', p_ingredients);
+end;
+$$;
+
+grant execute on function public.update_product_ingredients(text, jsonb) to authenticated;
 
 create or replace function public.connect_business(p_code text)
 returns jsonb

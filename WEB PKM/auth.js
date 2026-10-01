@@ -56,29 +56,46 @@
   };
   const readLocal = (key, fallback) => { try { const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback; } catch { return fallback; } };
   const writeLocal = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+  const writeLocalOnly = (key, value) => originalSetItem(key, JSON.stringify(value));
   currentBusiness = readLocal(BUSINESS_KEY, null);
 
   async function saveCloud(name, value) {
     if (!client || !session?.access_token || !currentUser || !currentBusiness?.business_id || hydrating) return;
-    const payload = { user_id: currentUser.id, business_id: currentBusiness.business_id, key: name, value, updated_at: new Date().toISOString() };
-    const { data: existing, error: findError } = await client.from('user_data').select('id').eq('business_id', currentBusiness.business_id).eq('key', name).maybeSingle();
-    if (findError) { console.warn('Gagal membaca data cloud:', findError.message); return; }
-    const result = existing
-      ? await client.from('user_data').update({ value, updated_at: payload.updated_at }).eq('id', existing.id)
-      : await client.from('user_data').insert(payload);
-    if (result.error) console.warn('Gagal sinkronisasi cloud:', result.error.message);
+    const businessId = currentBusiness.business_id;
+    const payload = {
+      user_id: currentUser.id,
+      business_id: businessId,
+      key: name,
+      value,
+      updated_at: new Date().toISOString()
+    };
+    // Satu baris untuk satu data per usaha. Upsert mencegah konflik saat
+    // Owner/UMKM menyimpan perubahan hampir bersamaan.
+    const { error } = await client
+      .from('user_data')
+      .upsert(payload, { onConflict: 'business_id,key' });
+    if (error) console.warn('Gagal sinkronisasi cloud:', error.message);
   }
 
   async function hydrateCloud() {
     if (!client || !currentUser || !session?.access_token || !currentBusiness?.business_id) return;
     hydrating = true;
     try {
-      const { data, error } = await client.from('user_data').select('key,value').eq('business_id', currentBusiness.business_id);
+      const { data, error } = await client
+        .from('user_data')
+        .select('key,value')
+        .eq('business_id', currentBusiness.business_id);
       if (error) throw error;
       for (const row of (data || [])) {
-        if (DATA_NAMES.includes(row.key)) originalSetItem(localKey(row.key), JSON.stringify(row.value ?? []));
+        if (DATA_NAMES.includes(row.key)) {
+          originalSetItem(localKey(row.key), JSON.stringify(row.value ?? []));
+        }
       }
-    } finally { hydrating = false; }
+    } catch (error) {
+      console.warn('Gagal memuat data usaha dari cloud:', error.message);
+    } finally {
+      hydrating = false;
+    }
   }
 
   async function connectBusiness(code) {
@@ -126,36 +143,71 @@
     }
   };
 
-  async function hydrateCloud() {
-    if (!client || !currentUser || !session?.access_token) return;
-    hydrating = true;
-    try {
-      const { data, error } = await client.from('user_data').select('key,value').eq('user_id', currentUser.id);
-      if (error) throw error;
-      for (const row of (data || [])) {
-        if (DATA_NAMES.includes(row.key)) originalSetItem(localKey(row.key), JSON.stringify(row.value ?? []));
-      }
-    } finally { hydrating = false; }
-  }
-
   async function restoreSession() {
     const { data, error } = await client.auth.getSession();
     if (error) throw error;
     session = data.session;
     currentUser = session?.user || null;
-    currentBusiness = currentUser ? readLocal(BUSINESS_KEY, null) : null;
-    if (currentUser) {
-      writeLocal(CURRENT_KEY, currentUser);
-      originalSetItem(LOGIN_KEY, 'true');
-      writeLocal(SESSION_KEY, session);
-    } else {
-      currentUser = null; currentBusiness = null;
+
+    if (!currentUser) {
+      currentUser = null;
+      currentBusiness = null;
       localStorage.removeItem(CURRENT_KEY);
       localStorage.removeItem(LOGIN_KEY);
       localStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(BUSINESS_KEY);
       localStorage.removeItem(ROLE_KEY);
+      return session;
     }
+
+    writeLocal(CURRENT_KEY, currentUser);
+    originalSetItem(LOGIN_KEY, 'true');
+    writeLocal(SESSION_KEY, session);
+
+    // Jangan percaya business_id yang tersimpan di localStorage sebagai sumber
+    // kebenaran. Ambil role + business terbaru dari database setiap kali sesi
+    // dipulihkan, sehingga pindah perangkat/browser tetap konsisten.
+    try {
+      const { data: profile, error: profileError } = await client
+        .from('profiles')
+        .select('role,business_id')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+      if (profileError) throw profileError;
+
+      if (profile?.role === 'owner') {
+        await connectOwnerBusiness();
+      } else if (profile?.role === 'umkm' && profile.business_id) {
+        const { data: b, error: bError } = await client
+          .from('businesses')
+          .select('id,owner_id,business_code,name')
+          .eq('id', profile.business_id)
+          .maybeSingle();
+        if (bError) throw bError;
+        if (!b) throw new Error('Usaha yang terhubung tidak ditemukan.');
+        currentBusiness = {
+          role: 'umkm',
+          business_id: b.id,
+          business_code: b.business_code,
+          owner_id: b.owner_id,
+          name: b.name
+        };
+        writeLocal(BUSINESS_KEY, currentBusiness);
+        writeLocal(ROLE_KEY, 'umkm');
+      } else {
+        currentBusiness = null;
+        localStorage.removeItem(BUSINESS_KEY);
+        localStorage.removeItem(ROLE_KEY);
+      }
+    } catch (e) {
+      console.warn('Gagal memulihkan data usaha:', e.message);
+      // Jangan memakai business lama dari browser jika database tidak
+      // mengonfirmasi hubungan akun tersebut.
+      currentBusiness = null;
+      localStorage.removeItem(BUSINESS_KEY);
+      localStorage.removeItem(ROLE_KEY);
+    }
+
     return session;
   }
 
@@ -181,15 +233,6 @@
   }
 
   async function signIn(email, password, businessCode, loginRole = '') {
-    const oldUser = readLocal(CURRENT_KEY, null);
-    const oldData = {};
-    if (oldUser?.id) {
-      for (const name of DATA_NAMES) {
-        for (const k of [`kt_user_${slug(oldUser.id)}_${name}_v6`, `kt_user_${slug(oldUser.id)}_${name}_v5`, `kt_user_${slug(oldUser.id)}_${name}_v4`]) {
-          const raw = localStorage.getItem(k); if (raw !== null) { try { oldData[name] = JSON.parse(raw); } catch {} break; }
-        }
-      }
-    }
     const { data, error } = await client.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
     if (error) throw error;
     session = data.session; currentUser = data.user;
@@ -221,10 +264,6 @@
       throw e;
     }
     await hydrateCloud();
-    for (const name of DATA_NAMES) {
-      const cloudKey = localKey(name);
-      if (localStorage.getItem(cloudKey) === null && Object.prototype.hasOwnProperty.call(oldData, name)) { originalSetItem(cloudKey, JSON.stringify(oldData[name])); await saveCloud(name, oldData[name]); }
-    }
     return currentUser;
   }
 
@@ -435,7 +474,7 @@
 
   window.KasirAuth = {
     SUPABASE_URL, SUPABASE_KEY, CURRENT_KEY, LOGIN_KEY,
-    DATA_NAMES, accounts, current, read, write, key, setSession, role, business, isUmkm, connectBusiness, connectOwnerBusiness,
+    DATA_NAMES, accounts, current, read, write, writeLocalOnly, key, setSession, role, business, isUmkm, connectBusiness, connectOwnerBusiness,
     logout, requireAuth, signUp, signIn, resetPassword, uploadAvatar, avatarUrl, openProfileMenu, ready,
     get session() { return session; },
     get client() { return client; }
