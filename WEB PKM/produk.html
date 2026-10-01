@@ -192,6 +192,44 @@ function renderEAN13(svg, value){
   svg.innerHTML=`<rect x="0" y="0" width="${total}" height="78" fill="#fff"/><g fill="#111">${rects.join("")}</g><text x="${total/2}" y="75" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#111">${value}</text>`;
 }
 
+function addProduct(){
+ const name=$("name").value.trim();
+ const price=Number($("price").value);
+ const cost=Number($("cost").value||0);
+ if(!name){toast("Nama produk wajib diisi");$("name").focus();return;}
+ if(!Number.isFinite(price)||price<=0){toast("Harga jual harus lebih dari 0");$("price").focus();return;}
+ if(!Number.isFinite(cost)||cost<0){toast("HPP tidak boleh negatif");$("cost").focus();return;}
+ const code=genProductCode();
+ const barcode=genEAN13();
+ const product={
+   id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+   name,
+   price,
+   cost,
+   code,
+   productCode:code,
+   barcode,
+   stock:0,
+   reorder:3,
+   owner:"",
+   ingredients:[],
+   createdAt:new Date().toISOString()
+ };
+ products.push(product);
+ save(STORE.products,products);
+ $("name").value="";
+ $("price").value="";
+ $("cost").value="";
+ $("productCode").value=genProductCode();
+ render();
+ toast(`Produk ${name} berhasil ditambahkan ✓`);
+}
+
+$("add").addEventListener("click",addProduct);
+$("name").addEventListener("keydown",e=>{if(e.key==="Enter"){$("price").focus()}});
+$("price").addEventListener("keydown",e=>{if(e.key==="Enter"){$("cost").focus()}});
+$("cost").addEventListener("keydown",e=>{if(e.key==="Enter")addProduct()});
+
 function render(){
  $("count").textContent=products.length+" produk";$("empty").style.display=products.length?"none":"block";
  $("list").innerHTML="";
