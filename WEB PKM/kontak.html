@@ -3,96 +3,148 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kontak - Toko Saya</title>
-
-<link rel="icon" type="image/png" href="ikon.png">
-
+  <title>Kontak - Our Journey</title>
+  <link rel="icon" type="image/png" href="ikon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="kontak.css">
-<link rel="stylesheet" href="shared-navbar.css">
+  <link rel="stylesheet" href="shared-navbar.css">
+  <link rel="stylesheet" href="responsive.css">
 </head>
 <body>
 
-<header class="site-navbar"><div class="site-navbar-inner">
-<a href="index.html" class="site-brand"><img src="logo.png" alt="Web PKM"><span class="site-brand-text"><strong>Our Journey</strong><small>Sistem Kasir Online</small></span></a>
-<button class="site-menu-toggle" id="siteMenuToggle" type="button" aria-label="Buka menu" aria-expanded="false"><span></span><span></span><span></span></button>
-<nav class="site-nav" id="siteNav">
-<a href="index.html">Beranda</a><a href="fitur.html">Fitur</a><a href="panduan.html">Panduan</a><a href="tentang.html">Tentang Kami</a><a href="kontak.html" class="active">Kontak</a>
-<a href="login.html" class="site-account login-button"><span class="account-avatar" data-account-avatar>U</span><span class="account-label">Masuk</span></a>
-</nav></div></header>
+<header class="site-navbar">
+  <div class="site-navbar-inner">
+    <a href="index.html" class="site-brand">
+      <img src="logo.png" alt="Web PKM">
+      <span class="site-brand-text"><strong>Our Journey</strong><small>Sistem Kasir Online</small></span>
+    </a>
+    <button class="site-menu-toggle" id="siteMenuToggle" type="button" aria-label="Buka menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="siteNav">
+      <a href="index.html">Beranda</a>
+      <a href="fitur.html">Fitur</a>
+      <a href="panduan.html">Panduan</a>
+      <a href="tentang.html">Tentang Kami</a>
+      <a href="kontak.html" class="active">Kontak</a>
+      <a href="login.html" class="site-account login-button"><span class="account-avatar" data-account-avatar>U</span><span class="account-label">Masuk</span></a>
+    </nav>
+  </div>
+</header>
 
-<main>
+<main class="contact-page">
   <section class="contact-hero">
-    <div class="container">
-      <span class="eyebrow">Kontak</span>
-      <h1>Hubungi Kami</h1>
-      <p>Kami siap membantu Anda. Sampaikan pertanyaan atau kebutuhan usaha Anda kepada tim Toko Saya.</p>
+    <div class="container hero-inner">
+      <span class="eyebrow">Hubungi Our Journey</span>
+      <h1>Butuh bantuan? <span>Kami siap membantu.</span></h1>
+      <p>Temukan informasi lokasi dan jam layanan kami. Semua dibuat sederhana agar Anda dapat menemukan informasi yang dibutuhkan dengan cepat.</p>
+    </div>
+  </section>
+
+  <section class="contact-highlights">
+    <div class="container highlight-grid">
+      <article class="highlight-card">
+        <div class="highlight-icon">⌖</div>
+        <div><strong>Lokasi jelas</strong><p>Temukan kami melalui peta di bawah.</p></div>
+      </article>
+      <article class="highlight-card">
+        <div class="highlight-icon">◷</div>
+        <div><strong>Jam layanan</strong><p>Senin–Jumat, 08.00–17.00 WITA.</p></div>
+      </article>
+      <article class="highlight-card">
+        <div class="highlight-icon">✓</div>
+        <div><strong>Informasi mudah</strong><p>Alamat dan navigasi tersedia dalam satu halaman.</p></div>
+      </article>
     </div>
   </section>
 
   <section class="contact-section">
-    <div class="container contact-grid">
+    <div class="container contact-main-grid">
+      <div class="contact-info-panel">
+        <div class="section-kicker">Informasi kontak</div>
+        <h2>Mari terhubung dengan kami</h2>
+        <p class="intro">Gunakan informasi berikut untuk mengetahui lokasi dan waktu layanan Our Journey.</p>
 
-      <div class="contact-info">
-        <h2>Butuh Bantuan?</h2>
-        <p class="intro">Silakan hubungi kami melalui informasi berikut atau kirimkan pesan menggunakan formulir.</p>
-
-        <div class="info-item">
-          <div class="info-icon">📍</div>
-          <div><h3>Alamat</h3><p>H43P+QJP, Moutong, Kec. Tilongkabila, Kabupaten Bone Bolango, Gorontalo 96119<br>Indonesia</p></div>
+        <div class="contact-detail">
+          <div class="detail-icon">⌖</div>
+          <div class="detail-copy">
+            <span>Alamat</span>
+            <strong>Lokasi Our Journey</strong>
+            <p>H43P+QJP, Moutong, Kec. Tilongkabila, Kabupaten Bone Bolango, Gorontalo 96119, Indonesia.</p>
+          </div>
         </div>
 
-        <div class="info-item">
-          <div class="info-icon">✉</div>
-          <div><h3>Email</h3><p>          </p></div>
+        <div class="contact-detail">
+          <div class="detail-icon">◷</div>
+          <div class="detail-copy">
+            <span>Jam layanan</span>
+            <strong>Senin – Jumat</strong>
+            <p>08.00 – 17.00 WITA</p>
+          </div>
         </div>
 
-        <div class="info-item">
-          <div class="info-icon">☎</div>
-          <div><h3>Telepon</h3><p>-------</p></div>
+        <div class="contact-detail">
+          <div class="detail-icon">✉</div>
+          <div class="detail-copy">
+            <span>Email</span>
+            <strong>ourjourney@gmail.com</strong>
+            <p><a href="mailto:ourjourney@gmail.com">Kirim email kepada kami →</a></p>
+          </div>
         </div>
 
-        <div class="info-item">
-          <div class="info-icon">⏰</div>
-          <div><h3>Jam Layanan</h3><p>Senin - Jumat<br>08.00 - 17.00 WITA</p></div>
+        <div class="contact-note">
+          <span class="note-check">✓</span>
+          <div><strong>Butuh petunjuk arah?</strong><p>Klik tombol Google Maps untuk membuka lokasi langsung di aplikasi atau browser.</p></div>
         </div>
+
+        <a class="map-button contact-action" href="https://maps.app.goo.gl/SeD6nQRk4DLfnD3L7" target="_blank" rel="noopener noreferrer">
+          <span>⌖</span> Buka lokasi di Google Maps
+        </a>
       </div>
 
       <div class="map-card">
         <div class="map-heading">
-          <span class="map-icon">📍</span>
+          <div class="map-title-icon">⌖</div>
           <div>
+            <span class="map-label">PETA LOKASI</span>
             <h2>Lokasi Kami</h2>
-            <p>Temukan lokasi Kami.</p>
+            <p>Gunakan peta untuk melihat posisi lokasi.</p>
           </div>
         </div>
-
         <div class="map-wrapper">
           <iframe
-            src="https://www.google.com/maps?q=0.5553453451359767, 123.13648237562931&output=embed"
-            title="Lokasi Kami"
+            src="https://www.google.com/maps?q=0.5553453451359767,123.13648237562931&output=embed"
+            title="Lokasi Our Journey"
             loading="lazy"
             allowfullscreen
-            referrerpolicy="no-referrer-when-downgrade">
-          </iframe>
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
-
-        <a
-          class="map-button"
-          href="https://maps.app.goo.gl/SeD6nQRk4DLfnD3L7"
-          target="_blank"
-          rel="noopener noreferrer">
-          <span>📍</span> Buka di Google Maps
-        </a>
+        <div class="map-footer">
+          <span><i></i> Lokasi tersedia di peta</span>
+          <a href="https://maps.app.goo.gl/SeD6nQRk4DLfnD3L7" target="_blank" rel="noopener noreferrer">Lihat rute →</a>
+        </div>
       </div>
+    </div>
+  </section>
 
+  <section class="contact-cta">
+    <div class="container cta-box">
+      <div>
+        <span class="section-kicker">Our Journey</span>
+        <h2>Siap mengelola usaha dengan lebih teratur?</h2>
+        <p>Kenali fitur yang tersedia dan mulai gunakan sistem kasir online kami.</p>
+      </div>
+      <div class="cta-actions">
+        <a href="fitur.html" class="cta-secondary">Lihat Fitur</a>
+        <a href="login.html" class="cta-primary">Masuk Sekarang</a>
+      </div>
     </div>
   </section>
 </main>
 
-<footer><p>© 2026 Toko Saya — Sistem Kasir Online</p></footer>
+<footer><p>© 2026 Our Journey — Sistem Kasir Online</p></footer>
 <script src="kontak.js"></script>
 <script src="auth.js"></script>
 <script src="shared-navbar.js"></script>

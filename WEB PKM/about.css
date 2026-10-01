@@ -12,323 +12,334 @@ footer{padding:25px;text-align:center;border-top:1px solid #edf1ed;font-size:12p
 @media(max-width:720px){.container{width:min(100% - 30px,520px)}.navbar{height:72px}.brand-text{display:none}.brand-icon{width:42px;height:42px}.menu-toggle{display:block;margin-left:auto}.menu-toggle span{display:block;width:25px;height:3px;margin:5px;background:var(--dark);border-radius:5px}.nav-menu{position:absolute;display:none;top:72px;left:15px;right:15px;background:#fff;box-shadow:0 12px 30px #0002;border-radius:14px;padding:8px 18px;flex-direction:column;gap:0}.nav-menu.open{display:flex}.nav-menu a{padding:12px 5px;border-bottom:1px solid #f0f2ef}.nav-menu .login-button{border-bottom:0}.nav-menu a.active:after{display:none}.nav-menu .login-button{min-width:82px;height:38px;padding:0 18px!important;font-size:12px;margin-top:8px;text-align:center;border:0}.hero-grid{display:flex;flex-direction:column}.hero-copy{padding:38px 0 8px}.hero h1{font-size:45px}.hero h2{font-size:25px}.hero p{font-size:13px}.hero-art{height:240px;width:100%}.illustration{transform:scale(.72);flex-shrink:0}.about{padding:45px 0 55px}.about-grid{grid-template-columns:1fr;gap:25px}.about-text{margin-left:0;font-size:13px}.section-title h2{font-size:27px}.slogan{margin-left:20px}.values{grid-template-columns:1fr;gap:23px;margin-top:10px}}
 
 
-/* =========================
-   TIM KAMI
-========================= */
-.team-section{margin-top:72px;padding-top:8px}
-.team-heading{text-align:center;margin-bottom:34px}
-.team-heading .eyebrow{margin-bottom:10px}
-.team-heading h2{color:var(--dark);font-size:32px;line-height:1.2}
-.team-heading p{margin-top:7px;font-size:13px;color:#7b8582}
-.team-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:24px}
-.team-card{background:#fff;border:1px solid #e7eee4;border-radius:20px;padding:24px 18px 22px;text-align:center;box-shadow:0 8px 24px rgba(27,75,42,.06);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
-.team-card:hover{transform:translateY(-5px);box-shadow:0 14px 30px rgba(27,75,42,.10);border-color:#bfe5ae}
-.team-photo{width:132px;height:132px;margin:0 auto 17px;border-radius:50%;overflow:hidden;background:#eff9e4;border:6px solid #f3faee;box-shadow:0 5px 18px rgba(30,95,52,.10)}
-.team-photo img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
-.team-card h3{margin:0;color:#174f3e;font-size:16px;line-height:1.35}
-.team-card>span{display:block;margin-top:5px;color:#67ad4c;font-size:12px;font-weight:600}
-
-@media(max-width:900px){
-  .team-grid{grid-template-columns:repeat(2,1fr);gap:20px}
-}
-@media(max-width:720px){
-  .team-section{margin-top:55px}
-  .team-heading h2{font-size:27px}
-  .team-grid{grid-template-columns:repeat(2,1fr);gap:14px}
-  .team-card{padding:18px 10px}
-  .team-photo{width:105px;height:105px;margin-bottom:13px}
-  .team-card h3{font-size:14px}
-  .team-card>span{font-size:11px}
-}
-@media(max-width:430px){
-  .team-grid{grid-template-columns:1fr}
-  .team-card{max-width:280px;width:100%;margin:0 auto}
-}
-
-/* 5 anggota: 3 kartu di baris pertama, 2 kartu di baris kedua dan berada di tengah */
-.team-grid .team-card{grid-column:span 2}
-.team-grid .team-card:nth-child(4){grid-column:2 / span 2}
-.team-grid .team-card:nth-child(5){grid-column:4 / span 2}
-@media(max-width:900px){
-  .team-grid{grid-template-columns:repeat(2,1fr)}
-  .team-grid .team-card,.team-grid .team-card:nth-child(4),.team-grid .team-card:nth-child(5){grid-column:auto}
-}
-@media(max-width:430px){
-  .team-grid{grid-template-columns:1fr}
-}
-
 /* =====================================================
-   TIM KAMI — DESAIN LEBIH MODERN & PROFESIONAL
+   TIM KAMI — RESPONSIVE
 ===================================================== */
 .team-section{
+  margin-top:72px;
+  padding:56px 0 8px;
   position:relative;
-  margin-top:78px;
-  padding:58px 0 8px;
 }
 .team-section::before{
   content:"";
   position:absolute;
   left:50%;
   top:0;
-  width:92px;
+  width:82px;
   height:4px;
   transform:translateX(-50%);
   border-radius:99px;
   background:linear-gradient(90deg,#9bd86e,#57b441);
 }
-.team-heading{max-width:650px;margin:0 auto 38px;text-align:center}
+.team-heading{
+  max-width:650px;
+  margin:0 auto 34px;
+  text-align:center;
+}
 .team-heading .eyebrow{
   padding:6px 15px;
   border:1px solid #dcefd1;
   background:#f2faeb;
-  letter-spacing:.2px;
 }
 .team-heading h2{
   margin-top:12px;
   color:#075b43;
   font-size:34px;
+  line-height:1.2;
   font-weight:800;
-  letter-spacing:-.5px;
 }
-.team-heading p{margin-top:9px;font-size:14px;color:#7a8580}
+.team-heading p{margin-top:8px;font-size:14px;color:#7a8580}
 
 .team-grid{
   display:grid;
-  grid-template-columns:repeat(6,minmax(0,1fr));
-  gap:22px;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:18px;
+  width:100%;
   align-items:stretch;
 }
 .team-card{
-  grid-column:span 2;
-  position:relative;
-  overflow:hidden;
-  min-height:300px;
-  padding:26px 20px 24px;
+  min-width:0;
+  width:100%;
+  padding:18px 14px 20px;
   text-align:center;
   border:1px solid #e4eee0;
-  border-radius:24px;
-  background:linear-gradient(180deg,#ffffff 0%,#fbfef9 100%);
-  box-shadow:0 10px 30px rgba(20,75,42,.07);
-  transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;
-}
-.team-card::before{
-  content:"";
-  position:absolute;
-  left:0;right:0;top:0;
-  height:5px;
-  background:linear-gradient(90deg,#72c84f,#4ea93c);
-}
-.team-card::after{
-  content:"";
-  position:absolute;
-  width:110px;height:110px;
-  right:-58px;top:-58px;
-  border-radius:50%;
-  background:#eff9e6;
+  border-radius:18px;
+  background:linear-gradient(180deg,#fff 0%,#fbfef9 100%);
+  box-shadow:0 8px 24px rgba(27,75,42,.07);
+  overflow:hidden;
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
 }
 .team-card:hover{
-  transform:translateY(-7px);
+  transform:translateY(-5px);
   border-color:#c9e7bd;
-  box-shadow:0 18px 38px rgba(20,75,42,.12);
+  box-shadow:0 14px 30px rgba(27,75,42,.11);
 }
-.team-card:nth-child(4){grid-column:2 / span 2}
-.team-card:nth-child(5){grid-column:4 / span 2}
-
+.team-card::before{content:"";display:block;height:4px;margin:-18px -14px 16px;background:linear-gradient(90deg,#72c84f,#4ea93c)}
 .team-photo{
-  position:relative;
-  z-index:1;
-  width:142px;height:142px;
-  margin:2px auto 18px;
-  padding:5px;
+  width:min(100%,150px);
+  aspect-ratio:1 / 1;
+  height:auto;
+  margin:0 auto 15px;
+  padding:4px;
   border:1px solid #d9ebd1;
   border-radius:50%;
   background:#fff;
-  box-shadow:0 8px 22px rgba(35,105,54,.12);
-}
-.team-photo::before{
-  content:"";
-  position:absolute;
-  inset:-5px;
-  border:2px solid #a9d991;
-  border-radius:50%;
-  opacity:.45;
+  box-shadow:0 6px 18px rgba(35,105,54,.10);
+  overflow:hidden;
 }
 .team-photo img{
-  width:100%;height:100%;
   display:block;
+  width:100%;
+  height:100%;
+  border-radius:50%;
   object-fit:cover;
   object-position:center;
-  border-radius:50%;
 }
 .team-card h3{
-  position:relative;
-  z-index:1;
   margin:0;
   color:#174f3e;
-  font-size:17px;
-  font-weight:700;
+  font-size:15px;
   line-height:1.35;
+  font-weight:700;
+  overflow-wrap:anywhere;
 }
 .team-card>span{
-  position:relative;
-  z-index:1;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  margin-top:9px;
-  padding:6px 13px;
+  max-width:100%;
+  margin-top:8px;
+  padding:5px 10px;
   border-radius:999px;
   color:#559f40;
   background:#eff9e7;
   border:1px solid #dcefd4;
-  font-size:11px;
+  font-size:10px;
   font-weight:700;
-  letter-spacing:.15px;
 }
 
-@media(max-width:900px){
-  .team-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-  .team-card,.team-card:nth-child(4),.team-card:nth-child(5){grid-column:auto}
-  .team-card{min-height:285px}
+/* Tablet: 3 + 2, tetap rapi dan semua foto utuh */
+@media(max-width:1050px){
+  .team-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+  .team-card:nth-child(4){grid-column:2}
+  .team-card:nth-child(5){grid-column:3}
+  .team-photo{width:min(100%,145px)}
 }
+
+/* HP: 2 kolom agar tidak ada kartu/foto yang terpotong */
 @media(max-width:720px){
-  .team-section{margin-top:58px;padding-top:48px}
-  .team-heading{margin-bottom:28px}
-  .team-heading h2{font-size:28px}
-  .team-heading p{font-size:13px}
-  .team-grid{gap:14px}
-  .team-card{min-height:265px;padding:21px 12px 20px;border-radius:20px}
-  .team-photo{width:112px;height:112px;margin-bottom:15px}
-  .team-card h3{font-size:14px}
-  .team-card>span{font-size:10px;padding:5px 10px}
-}
-@media(max-width:430px){
-  .team-grid{grid-template-columns:1fr;gap:15px}
+  .team-section{margin-top:55px;padding:48px 0 5px}
+  .team-heading{margin-bottom:26px}
+  .team-heading h2{font-size:27px}
+  .team-heading p{font-size:12px}
+  .team-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .team-card,.team-card:nth-child(4),.team-card:nth-child(5){grid-column:auto}
-  .team-card{width:100%;max-width:310px;min-height:255px;margin:0 auto;padding:22px 18px}
-  .team-photo{width:118px;height:118px}
+  .team-card{padding:15px 9px 17px;border-radius:16px}
+  .team-card::before{margin:-15px -9px 13px}
+  .team-photo{
+    width:min(100%,115px);
+    margin-bottom:12px;
+    padding:3px;
+  }
+  .team-card h3{font-size:13px;line-height:1.3}
+  .team-card>span{font-size:9px;padding:4px 8px;margin-top:7px}
 }
 
-/* =====================================================
-   TIM KAMI — 5 BERJAJAR, KARTU LEBIH RAMPING & TINGGI
-===================================================== */
-.team-grid{
-  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
-  gap:16px !important;
-  align-items:stretch;
-}
-.team-card,
-.team-grid .team-card,
-.team-grid .team-card:nth-child(4),
-.team-grid .team-card:nth-child(5){
-  grid-column:auto !important;
-  min-width:0;
-  min-height:365px;
-  height:365px;
-  padding:22px 14px 24px;
-  border-radius:14px;
-}
-.team-card::after{display:none}
-.team-photo{
-  width:100% !important;
-  height:205px !important;
-  margin:0 auto 18px !important;
-  padding:0 !important;
-  border:0 !important;
-  border-radius:10px !important;
-  background:#eff9e4;
-  box-shadow:none !important;
-  overflow:hidden;
-}
-.team-photo::before{display:none !important}
-.team-photo img{
-  width:100% !important;
-  height:100% !important;
-  border-radius:10px !important;
-  object-fit:cover;
-  object-position:center;
-}
-.team-card h3{font-size:16px;line-height:1.35}
-.team-card>span{
-  margin-top:8px;
-  padding:5px 10px;
-  border-radius:7px;
-  font-size:11px;
-}
-
-@media(max-width:1000px){
-  .team-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:16px !important}
-  .team-card,.team-grid .team-card,.team-grid .team-card:nth-child(4),.team-grid .team-card:nth-child(5){min-height:350px;height:350px}
-  .team-photo{height:190px !important}
-}
-@media(max-width:720px){
-  .team-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:14px !important}
-  .team-card,.team-grid .team-card,.team-grid .team-card:nth-child(4),.team-grid .team-card:nth-child(5){height:330px;min-height:330px;padding:18px 10px 20px;border-radius:12px}
-  .team-photo{height:175px !important;margin-bottom:14px !important;border-radius:9px !important}
-  .team-photo img{border-radius:9px !important}
+/* HP kecil: satu kolom supaya foto dan nama benar-benar utuh */
+@media(max-width:420px){
+  .team-grid{grid-template-columns:1fr;gap:14px}
+  .team-card,.team-card:nth-child(4),.team-card:nth-child(5){grid-column:auto}
+  .team-card{width:100%;max-width:300px;margin:0 auto;padding:18px 14px 20px}
+  .team-card::before{margin:-18px -14px 15px}
+  .team-photo{width:150px;margin-bottom:14px}
   .team-card h3{font-size:14px}
   .team-card>span{font-size:10px}
 }
-@media(max-width:430px){
-  .team-grid{grid-template-columns:1fr !important;gap:15px !important}
-  .team-card,.team-grid .team-card,.team-grid .team-card:nth-child(4),.team-grid .team-card:nth-child(5){width:100%;max-width:290px;height:340px;min-height:340px;margin:0 auto}
-  .team-photo{height:190px !important}
-}
 
 /* =====================================================
-   TIM KAMI — FOTO LEBIH BESAR & LEBIH TINGGI
+   ABOUT PAGE — POLISHED REDESIGN
 ===================================================== */
-.team-card,
-.team-grid .team-card,
-.team-grid .team-card:nth-child(4),
-.team-grid .team-card:nth-child(5){
-  min-height:425px;
-  height:425px;
-  padding:22px 14px 24px;
-}
-.team-photo{
-  width:100% !important;
-  height:255px !important;
-  margin:0 auto 18px !important;
-  border-radius:10px !important;
-  overflow:hidden !important;
-}
-.team-photo img{
-  width:100% !important;
-  height:100% !important;
-  object-fit:cover !important;
-  object-position:center !important;
-  border-radius:10px !important;
-}
-@media(max-width:1000px){
-  .team-card,
-  .team-grid .team-card,
-  .team-grid .team-card:nth-child(4),
-  .team-grid .team-card:nth-child(5){
-    min-height:410px;
-    height:410px;
-  }
-  .team-photo{height:235px !important}
+.hero{position:relative;border-bottom:1px solid #eef4ea}
+.hero::after{content:"";position:absolute;inset:auto -10% -130px auto;width:360px;height:360px;border-radius:50%;background:#f1fae9;filter:blur(2px);z-index:0;pointer-events:none}
+.hero-grid,.about .container{position:relative;z-index:1}
+.hero-copy{max-width:590px}
+.hero .eyebrow{box-shadow:0 4px 14px rgba(80,150,60,.08)}
+.hero h1{letter-spacing:-1.5px}
+.hero h2{letter-spacing:-.5px}
+.hero p{line-height:1.85;color:#697671}
+.illustration{box-shadow:0 22px 50px rgba(54,113,51,.08);border:1px solid #e5f0df}
+.hero-art img{max-width:100%;height:auto;display:block;border-radius:18px;object-fit:contain;box-shadow:0 18px 35px rgba(30,80,40,.10)}
+
+.about{position:relative;background:linear-gradient(180deg,#fff 0%,#fbfef9 100%)}
+.about-grid{grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:52px;align-items:stretch}
+.about-main-copy{padding:10px 0}
+.title-mark{display:grid;place-items:center;color:#5eb047;font-size:16px;font-weight:800}
+.about-lead{margin:13px 0 0 52px;max-width:650px;color:#245b48;font-size:20px;line-height:1.45;font-weight:700}
+.about-text{margin:12px 0 0 52px;max-width:650px;line-height:1.85;color:#6c7873}
+.about-highlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:25px 0 0 52px;max-width:650px}
+.about-highlights div{padding:15px 13px;border:1px solid #e4efdf;border-radius:16px;background:#fff;box-shadow:0 8px 20px rgba(33,83,47,.05)}
+.about-highlights strong{display:block;color:#4f9f3e;font-size:22px;line-height:1.1}
+.about-highlights span{display:block;margin-top:5px;color:#7a8580;font-size:10px;line-height:1.35}
+.about-card{padding:27px;border:1px solid #dfeeda;border-radius:24px;background:linear-gradient(145deg,#f7fced,#eff9e5);box-shadow:0 14px 35px rgba(43,103,46,.08);display:flex;flex-direction:column;justify-content:center;min-height:260px}
+.about-card-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:#fff;color:#58aa43;font-weight:800;box-shadow:0 8px 18px rgba(56,114,46,.10);margin-bottom:15px}
+.about-card-label{font-size:11px;font-weight:700;color:#5a9f45;text-transform:uppercase;letter-spacing:.7px}
+.about-card h3{margin-top:7px;color:#16553f;font-size:22px;line-height:1.25}
+.about-card>p{margin-top:10px;font-size:13px;line-height:1.75;color:#68766f}
+.about-checks{display:flex;flex-direction:column;gap:7px;margin-top:15px;color:#3f8e37;font-size:11px;font-weight:600}
+
+/* Team: rectangular portraits, no circular crop */
+.team-section{margin-top:78px;padding:60px 0 12px}
+.team-section::before{width:96px;height:4px;background:linear-gradient(90deg,#9edb72,#52ad3f)}
+.team-heading h2{font-size:36px;letter-spacing:-.7px}
+.team-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}
+.team-card{padding:12px 12px 18px;border-radius:20px;background:#fff;border:1px solid #e1ecdd;box-shadow:0 10px 28px rgba(27,75,42,.065)}
+.team-card::before{height:3px;margin:-12px -12px 12px}
+.team-photo{width:100%;height:auto;aspect-ratio:3 / 2;margin:0 0 15px;padding:0;border:0;border-radius:13px;background:#eef6e9;box-shadow:none;overflow:hidden}
+.team-photo img{width:100%;height:100%;border-radius:0;object-fit:cover;object-position:center}
+.team-card h3{font-size:14px;min-height:38px;display:flex;align-items:center;justify-content:center;color:#174f3e}
+.team-card>span{margin-top:8px;font-size:9px;padding:5px 11px}
+.team-card:hover{transform:translateY(-4px);box-shadow:0 16px 32px rgba(27,75,42,.10)}
+
+.values{gap:18px;margin-top:38px}
+.values article{padding:20px;border:1px solid #e5eee1;border-radius:18px;background:#fff;box-shadow:0 8px 22px rgba(30,80,40,.045)}
+.values p{line-height:1.65}
+footer{background:#fbfdf9}
+
+@media(max-width:1050px){
+  .about-grid{grid-template-columns:1fr;gap:25px}
+  .about-card{max-width:none;min-height:0}
+  .about-highlights{max-width:none}
+  .team-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+  .team-card:nth-child(4),.team-card:nth-child(5){grid-column:auto}
 }
 @media(max-width:720px){
-  .team-card,
-  .team-grid .team-card,
-  .team-grid .team-card:nth-child(4),
-  .team-grid .team-card:nth-child(5){
-    height:370px;
-    min-height:370px;
-    padding:18px 10px 20px;
-  }
-  .team-photo{height:215px !important;margin-bottom:14px !important}
+  .hero::after{width:220px;height:220px;bottom:-80px}
+  .hero-art img{width:100%;max-height:205px;object-fit:contain}
+  .about-grid{gap:20px}
+  .about-lead{margin-left:0;font-size:17px}
+  .about-text{margin-left:0;font-size:13px;line-height:1.75}
+  .about-highlights{margin-left:0;gap:8px}
+  .about-highlights div{padding:12px 9px}
+  .about-highlights strong{font-size:18px}
+  .about-highlights span{font-size:9px}
+  .about-card{padding:22px;border-radius:20px}
+  .about-card h3{font-size:20px}
+  .team-section{margin-top:58px;padding-top:50px}
+  .team-heading h2{font-size:28px}
+  .team-heading p{font-size:12px}
+  .team-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .team-card{padding:10px 9px 15px;border-radius:16px}
+  .team-card::before{margin:-10px -9px 10px}
+  .team-photo{aspect-ratio:3 / 2;border-radius:11px;margin-bottom:11px}
+  .team-card h3{font-size:12px;min-height:42px}
+  .team-card>span{font-size:8px;padding:4px 8px}
+  .values{grid-template-columns:1fr;gap:12px;margin-top:28px}
+  .values article{padding:16px}
 }
-@media(max-width:430px){
-  .team-card,
-  .team-grid .team-card,
-  .team-grid .team-card:nth-child(4),
-  .team-grid .team-card:nth-child(5){
-    height:390px;
-    min-height:390px;
-    max-width:310px;
-  }
-  .team-photo{height:235px !important}
+@media(max-width:380px){
+  .about-highlights{grid-template-columns:1fr}
+  .team-grid{grid-template-columns:1fr}
+  .team-card{max-width:330px;margin:auto;width:100%}
+  .team-photo{aspect-ratio:3 / 2}
+}
+
+/* =========================================================
+   FINAL TEAM + ABOUT POLISH
+   Foto anggota tampil utuh, jelas, tanpa lingkaran/crop.
+========================================================= */
+.container{width:min(calc(100% - 48px),1250px)}
+
+.about{padding-top:72px}
+.about-grid{grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:64px}
+.about-main-copy{padding:14px 0}
+.about-lead{font-size:22px;max-width:760px}
+.about-text{font-size:14px;max-width:760px}
+.about-highlights{max-width:760px}
+.about-card{min-height:330px;padding:32px}
+
+.team-section{margin-top:88px;padding:72px 0 18px}
+.team-heading{max-width:760px;margin-bottom:42px}
+.team-heading h2{font-size:40px}
+.team-heading p{font-size:15px}
+.team-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:20px;align-items:start}
+.team-card{
+  padding:14px 14px 20px;
+  border-radius:20px;
+  min-width:0;
+  background:#fff;
+  border:1px solid #dfeadd;
+  box-shadow:0 12px 30px rgba(27,75,42,.07);
+}
+.team-card::before{height:4px;margin:-14px -14px 14px}
+.team-photo{
+  width:100%;
+  height:auto;
+  aspect-ratio:4 / 5;
+  margin:0 0 16px;
+  padding:0;
+  border:1px solid #e3ece0;
+  border-radius:14px;
+  background:#f7faf5;
+  box-shadow:none;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.team-photo img{
+  display:block;
+  width:100%;
+  height:100%;
+  max-width:100%;
+  max-height:100%;
+  border-radius:0;
+  object-fit:contain;
+  object-position:center;
+}
+.team-card h3{
+  min-height:44px;
+  font-size:14px;
+  line-height:1.4;
+  color:#174f3e;
+  text-align:center;
+}
+.team-card>span{margin-top:10px;font-size:9px;padding:5px 11px}
+.team-card:hover{transform:translateY(-5px);box-shadow:0 18px 34px rgba(27,75,42,.11)}
+
+.values{margin-top:42px;gap:20px}
+.values article{min-height:145px;padding:22px}
+
+@media(max-width:1100px){
+  .container{width:min(calc(100% - 40px),1000px)}
+  .about-grid{grid-template-columns:1fr;gap:28px}
+  .about-card{min-height:0;max-width:760px}
+  .team-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+}
+
+@media(max-width:720px){
+  .container{width:calc(100% - 28px)}
+  .about{padding-top:48px}
+  .about-lead{font-size:18px}
+  .about-text{font-size:13px}
+  .about-card{padding:22px}
+  .team-section{margin-top:60px;padding-top:54px}
+  .team-heading{margin-bottom:28px}
+  .team-heading h2{font-size:29px;line-height:1.2}
+  .team-heading p{font-size:12px}
+  .team-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .team-card{padding:11px 10px 16px;border-radius:17px}
+  .team-card::before{margin:-11px -10px 11px}
+  .team-photo{aspect-ratio:4 / 5;border-radius:12px;margin-bottom:12px}
+  .team-card h3{font-size:12px;min-height:42px}
+  .team-card>span{font-size:8px;padding:4px 8px}
+  .values{margin-top:30px}
+}
+
+@media(max-width:390px){
+  .team-grid{grid-template-columns:1fr;max-width:310px;margin-left:auto;margin-right:auto}
+  .team-card{width:100%;padding:14px 13px 18px}
+  .team-card::before{margin:-14px -13px 13px}
+  .team-photo{aspect-ratio:4 / 5}
+  .team-card h3{font-size:14px;min-height:44px}
+  .team-card>span{font-size:9px}
 }

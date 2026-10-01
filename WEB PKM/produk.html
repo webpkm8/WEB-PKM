@@ -5,7 +5,7 @@
 <link rel="icon" type="image/png" href="ikon.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/JsBarcode/3.11.5/JsBarcode.all.min.js"></script><style>
+<style>
 :root{
  --bg:#fbfef9;--white:#fff;--green:#55b94f;--green2:#83dc68;--dark:#15351f;
  --soft:#edf9e9;--soft2:#f6fbf4;--yellow:#ffe83d;--yellow2:#fff9c9;
@@ -61,7 +61,7 @@ td{padding:10px;border-top:1px solid var(--line);vertical-align:top}
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:13px}
 .product{border:1px solid var(--line);border-radius:17px;padding:14px;background:#fff}.product:hover{border-color:#b8ddb9}
 .product h4{margin:0;font-size:14px}.price{color:#328f46;font:800 12px var(--mono);margin-top:4px}
-.barcode{margin-top:10px;border:1px solid var(--line);border-radius:11px;padding:7px;text-align:center}.barcode svg{width:100%;height:65px}
+.barcode{margin-top:10px;border:1px solid var(--line);border-radius:11px;padding:7px;text-align:center;min-height:82px;display:flex;flex-direction:column;justify-content:center}.barcode svg{display:block;width:100%;height:78px;max-width:100%;margin:0 auto}.barcode svg text{font-family:monospace!important;font-size:11px!important;fill:#111!important}
 .code{margin-top:5px;padding:6px;border-radius:7px;background:var(--soft2);font:700 10px var(--mono);word-break:break-all}
 .actions{display:flex;gap:6px;margin-top:9px}.actions .btn{flex:1}
 .badge{display:inline-block;border-radius:99px;padding:4px 8px;font-size:9px;font-weight:800}.good{background:var(--soft);color:#31823b}.warn{background:var(--yellow2);color:#806d00}.danger-badge{background:var(--redsoft);color:#c53d38}
@@ -76,6 +76,7 @@ td{padding:10px;border-top:1px solid var(--line);vertical-align:top}
 @media(max-width:650px){.app{padding:14px 11px}.nav a{padding:8px 7px;font-size:10px}.hero h2{font-size:24px}.grid3,.stats,.form,.compare{grid-template-columns:1fr}.full{grid-column:auto}.scanner-box{grid-template-columns:1fr}}
 </style>    <script src="auth.js"></script>
 <link rel="stylesheet" href="shared-navbar.css">
+<link rel="stylesheet" href="responsive.css">
 </head><body><div class="app">
 <header class="site-navbar app-site-navbar"><div class="site-navbar-inner">
 <a href="index.html" class="site-brand"><img src="logo.png" alt="Web PKM"><span class="site-brand-text"><strong>Our Journey</strong><small>Sistem Kasir Online</small></span></a>
@@ -92,8 +93,8 @@ td{padding:10px;border-top:1px solid var(--line);vertical-align:top}
 <div><label class="label">Nama Produk</label><input id="name" placeholder="Contoh: Kopi Susu"></div>
 <div><label class="label">Harga Jual (Rp)</label><input id="price" type="number" min="1" placeholder="15000"></div>
 <div><label class="label">Harga Modal / HPP per unit (Rp)</label><input id="cost" type="number" min="0" placeholder="8000"></div>
-<div><label class="label">Kode Barcode</label><div style="display:flex;gap:7px"><input id="barcode" placeholder="Kosongkan untuk otomatis"><button type="button" id="gen" class="btn yellow">🎲 Generate</button></div></div>
-<div class="full"><button id="add" class="btn primary" style="width:100%">＋ Simpan Produk & Buat Barcode</button></div>
+<div><label class="label">Kode Produk</label><input id="productCode" readonly placeholder="Otomatis saat produk dibuat"><div class="small" style="margin-top:5px">Kode dibuat otomatis dan unik untuk setiap produk.</div></div>
+<div class="full"><div class="note" style="margin:0 0 9px">🏷️ EAN-13 dibuat otomatis untuk setiap produk. Barcode dapat dipindai scanner kasir.</div><button id="add" class="btn primary" style="width:100%">＋ Simpan Produk & Buat EAN-13 Otomatis</button></div>
 </div></div>
 <div class="card"><div class="title"><h3>Hubungan Fitur</h3></div>
 <div class="pill-row"><span class="pill">🏷️ Barcode</span><span class="pill">🧮 Kasir</span><span class="pill">📦 Storage</span><span class="pill">🧪 Ingredient</span></div>
@@ -119,39 +120,91 @@ const toast=s=>{let t=$("toast");if(!t)return;t.textContent=s;t.classList.add("s
 const fmtDate=d=>new Date(d).toLocaleDateString("id-ID",{day:"2-digit",month:"2-digit",year:"numeric"});
 
 let products=load(STORE.products,[]);
-function genCode(){
-  const now=Date.now().toString();
-  const random=Math.floor(100+Math.random()*900).toString();
-  return (now.slice(-8)+random);
+function randomDigits(length){
+  let out="";
+  while(out.length<length) out += Math.floor(Math.random()*10);
+  return out.slice(0,length);
 }
-$("gen").addEventListener("click",function(e){
-  e.preventDefault();
-  $("barcode").value=genCode();
-  $("barcode").focus();
-  toast("Kode barcode berhasil dibuat ✅");
-});
-$("add").onclick=()=>{
- let name=$("name").value.trim(),price=+$("price").value,cost=+$("cost").value||0,barcode=$("barcode").value.trim()||genCode();
- if(!name||!price)return toast("Nama dan harga jual wajib diisi");
- if(products.some(p=>p.barcode===barcode))return toast("Kode barcode sudah dipakai");
- products.push({id:"P"+Date.now(),name,price,cost,barcode,stock:0,reorder:3,owner:"",ingredients:[]});
- save(STORE.products,products);window.dispatchEvent(new Event("productsUpdated"));render();$("name").value=$("price").value=$("cost").value=$("barcode").value="";toast("Produk tersimpan ✅");
-};
+function codeExists(code){
+  return products.some(p=>String(p.code||p.productCode||"")===String(code));
+}
+function barcodeExists(code){
+  return products.some(p=>String(p.barcode||"")===String(code));
+}
+function genProductCode(){
+  let code="PKM"+new Date().getFullYear().toString().slice(-2)+randomDigits(7);
+  while(codeExists(code)) code="PKM"+new Date().getFullYear().toString().slice(-2)+randomDigits(7);
+  return code;
+}
+
+// EAN-13 untuk barcode produk internal. Prefix 20 menandai restricted/internal distribution.
+function ean13CheckDigit(base12){
+  const s=String(base12).replace(/\D/g,"").slice(0,12).padStart(12,"0");
+  let sum=0;
+  for(let i=0;i<12;i++) sum += Number(s[i]) * (i%2===0 ? 1 : 3);
+  return String((10-(sum%10))%10);
+}
+function validEAN13(code){
+  const s=String(code||"");
+  if(!/^\d{13}$/.test(s)) return false;
+  return ean13CheckDigit(s.slice(0,12))===s[12];
+}
+function genEAN13(){
+  let base="20"+randomDigits(10);
+  let code=base+ean13CheckDigit(base);
+  while(barcodeExists(code)){ base="20"+randomDigits(10); code=base+ean13CheckDigit(base); }
+  return code;
+}
+function ensureProductCodes(){
+  let changed=false;
+  products.forEach(p=>{
+    if(!p.code){ p.code=p.productCode||genProductCode(); changed=true; }
+    if(!p.productCode){ p.productCode=p.code; changed=true; }
+    if(!validEAN13(p.barcode)){ p.barcode=genEAN13(); changed=true; }
+  });
+  if(changed) save(STORE.products,products);
+}
+ensureProductCodes();
+$("productCode").value=genProductCode();
+
+function renderEAN13(svg, value){
+  value=String(value||"").trim();
+  if(!validEAN13(value)){ svg.innerHTML=""; return; }
+  const L=["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"];
+  const G=["0100111","0110011","0011011","0100001","0011101","0111001","0000101","0010001","0001001","0010111"];
+  const R=["1110010","1100110","1101100","1000010","1011100","1001110","1010000","1000100","1001000","1110100"];
+  const parity=["LLLLLL","LLGLGG","LLGGLG","LLGGGL","LGLLGG","LGGLLG","LGGGLL","LGLGLG","LGLGGL","LGGLGL"];
+  const first=Number(value[0]);
+  let bits="101";
+  const p=parity[first];
+  for(let i=1;i<=6;i++) bits += (p[i-1]==="L"?L:G)[Number(value[i])];
+  bits += "01010";
+  for(let i=7;i<=12;i++) bits += R[Number(value[i])];
+  bits += "101";
+  const module=3; const quiet=12*module; const h=68; const barH=54;
+  let rects=[];
+  for(let i=0;i<bits.length;i++) if(bits[i]==="1") rects.push(`<rect x="${quiet+i*module}" y="4" width="${module}" height="${barH}"/>`);
+  const total=quiet*2+bits.length*module;
+  svg.setAttribute("viewBox",`0 0 ${total} 78`);
+  svg.setAttribute("preserveAspectRatio","xMidYMid meet");
+  svg.setAttribute("width","100%"); svg.setAttribute("height","78");
+  svg.setAttribute("role","img"); svg.setAttribute("aria-label",`EAN-13 ${value}`);
+  svg.innerHTML=`<rect x="0" y="0" width="${total}" height="78" fill="#fff"/><g fill="#111">${rects.join("")}</g><text x="${total/2}" y="75" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#111">${value}</text>`;
+}
+
 function render(){
  $("count").textContent=products.length+" produk";$("empty").style.display=products.length?"none":"block";
  $("list").innerHTML="";
  products.forEach(p=>{
   let d=document.createElement("div");d.className="product";
   d.innerHTML=`<h4>${esc(p.name)}</h4><div class="price">${rp(p.price)} · HPP ${rp(p.cost)}</div>
+  <div class="small" style="margin-top:7px">Kode Produk: <strong>${esc(p.code || p.productCode || p.barcode)}</strong></div>
   <div class="barcode"><svg></svg><div class="code">${esc(p.barcode)}</div></div>
   <div class="small" style="margin-top:7px">Stok: ${p.stock||0} · Pemilik: ${esc(p.owner||"Belum diatur")}</div>
   <div class="actions"><button class="btn secondary edit">⚙️ Storage</button><button class="btn secondary copy">📋 Salin</button><button class="btn danger del">🗑️ Hapus</button></div>`;
   $("list").appendChild(d);
-  if(window.JsBarcode){
-    try{
-      JsBarcode(d.querySelector("svg"),p.barcode,{format:"CODE128",height:52,width:1.7,displayValue:true,fontSize:11,margin:3});
-    }catch(e){}
-  }
+  const svg=d.querySelector("svg");
+  renderEAN13(svg,String(p.barcode));
   d.querySelector(".edit").onclick=()=>location.href="storage.html?product="+encodeURIComponent(p.id);
   d.querySelector(".copy").onclick=async()=>{try{await navigator.clipboard.writeText(p.barcode)}catch(e){}toast("Barcode disalin")};
   d.querySelector(".del").onclick=()=>{if(confirm("Hapus "+p.name+"?")){products=products.filter(x=>x.id!==p.id);save(STORE.products,products);render()}};

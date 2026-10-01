@@ -1,0 +1,225 @@
+/* =========================================================
+   WEB PKM - GLOBAL RESPONSIVE OVERRIDES
+   Tujuan: semua halaman nyaman di HP, tablet, laptop.
+========================================================= */
+
+html, body { width:100%; max-width:100%; min-width:0; overflow-x:hidden; }
+img, svg, video, canvas, iframe { max-width:100%; }
+button, input, select, textarea { max-width:100%; }
+
+/* ---------- APP / FITUR KERJA ---------- */
+.app { width:100%; max-width:1400px; margin:0 auto; padding:22px 28px 60px; }
+.app .site-navbar.app-site-navbar { margin:-22px -28px 22px; width:calc(100% + 56px); }
+.app .hero, .app .card, .app .note, .app .grid, .app .grid3, .app .stats,
+.app .product-grid, .app .table, .app .compare, .app .scanner-box { min-width:0; max-width:100%; }
+.app .hero h2, .app .hero p, .app .title, .app .small, .app .muted,
+.app td, .app th, .app h3, .app h4 { overflow-wrap:anywhere; }
+.app .table { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.app table { min-width:560px; }
+.app .product-grid { grid-template-columns:repeat(auto-fit,minmax(min(235px,100%),1fr)); }
+.app .barcode { overflow:hidden; }
+.app .barcode svg { max-width:100%; height:auto; min-height:70px; }
+.app .actions { flex-wrap:wrap; }
+.app .actions .btn { min-width:0; }
+.app input, .app select, .app textarea { min-width:0; }
+
+/* ---------- LANDING / INDEX ---------- */
+@media (max-width: 900px) {
+  .container { width:min(100% - 30px, 720px); }
+  .hero-container { grid-template-columns:1fr; text-align:center; gap:10px; }
+  .hero-content { padding:42px 0 10px; }
+  .hero-content p { margin-left:auto; margin-right:auto; }
+  .hero-buttons { justify-content:center; flex-wrap:wrap; }
+  .hero-illustration { margin:0 auto; max-width:100%; }
+  .feature-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .steps { grid-template-columns:1fr; gap:18px; }
+  .step-line { display:none; }
+  .about-grid { grid-template-columns:1fr; }
+}
+
+@media (max-width: 600px) {
+  .container { width:calc(100% - 28px); }
+  .hero { min-height:auto; }
+  .hero-content { padding:34px 0 6px; }
+  .hero h1 { font-size:clamp(30px,9vw,42px); line-height:1.08; }
+  .hero h2 { font-size:clamp(22px,6vw,30px); }
+  .hero p { font-size:12px; line-height:1.65; }
+  .hero-buttons { width:100%; flex-direction:column; gap:9px; }
+  .hero-buttons a, .hero-buttons button { width:100%; justify-content:center; }
+  .hero-illustration { transform:scale(.78); transform-origin:center top; margin-bottom:-55px; }
+  .feature-grid { grid-template-columns:1fr; gap:12px; }
+  .feature-card { min-height:145px; }
+  .section-heading h2 { font-size:25px; }
+  .how-box { padding:20px 14px; }
+  .cta-container { padding:14px 0; }
+}
+
+/* ---------- FITUR ---------- */
+@media (max-width: 800px) {
+  .content { padding-left:20px; padding-right:20px; }
+  .tools-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .tool-card:last-child { grid-column:auto; }
+}
+@media (max-width: 480px) {
+  .content { padding-left:12px; padding-right:12px; }
+  .feature-title { padding-left:5px; padding-right:5px; }
+  .feature-title h1 { font-size:clamp(25px,8vw,34px); letter-spacing:1px; }
+  .feature-title p { font-size:10px; line-height:1.6; }
+  .tools-grid { grid-template-columns:1fr; max-width:360px; gap:12px; }
+  .tool-card { min-height:145px; padding:15px 12px; }
+  .tool-icon { width:58px; height:58px; }
+  .tool-icon > span { font-size:25px; }
+  .tool-card h2 { font-size:12px; }
+  .tool-card p { font-size:10px; line-height:1.5; }
+}
+
+/* ---------- PANDUAN ---------- */
+@media (max-width: 800px) {
+  .guide-card { grid-template-columns:1fr; }
+  .guide-image { height:auto; min-height:190px; }
+  .guide-image img { width:100%; height:auto; max-height:420px; object-fit:contain; }
+  .guide-info { padding:20px; }
+}
+@media (max-width: 480px) {
+  .guide-header h1 { font-size:clamp(24px,8vw,32px); }
+  .guide-header p { font-size:10px; line-height:1.6; }
+  .guide-card { min-height:0; padding:10px; }
+  .guide-image { min-height:150px; }
+  .guide-info h2 { font-size:17px; }
+  .guide-info > p { font-size:10px; line-height:1.6; }
+  .guide-label, .guide-user { font-size:9px; }
+  .read-button { font-size:9px; padding:8px 10px; }
+}
+
+/* ---------- TENTANG KAMI ---------- */
+@media (max-width: 900px) {
+  .about .hero-grid { grid-template-columns:1fr; }
+  .about .illustration { max-width:100%; }
+  .about-grid { grid-template-columns:1fr; gap:28px; }
+  .values { grid-template-columns:1fr; gap:20px; }
+}
+@media (max-width: 720px) {
+  .about .hero-copy { text-align:center; }
+  .about .hero-copy p { margin-left:auto; margin-right:auto; }
+  .about .hero-art { width:100%; overflow:hidden; }
+  .about .illustration { transform:scale(.65); transform-origin:center top; margin-bottom:-90px; }
+  .about-text { margin-left:0; }
+  .team-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .team-card:nth-child(4), .team-card:nth-child(5) { grid-column:auto; }
+}
+@media (max-width: 430px) {
+  .team-grid { grid-template-columns:1fr; max-width:310px; margin-left:auto; margin-right:auto; }
+  .team-photo { width:145px; }
+}
+
+/* ---------- KONTAK ---------- */
+@media (max-width: 850px) {
+  .contact-grid { grid-template-columns:1fr; gap:28px; }
+  .contact-hero { padding:48px 0 42px; }
+  .contact-hero h1 { font-size:clamp(34px,10vw,48px); }
+  .contact-section { padding:42px 0 60px; }
+  .map-card { padding:22px; }
+}
+@media (max-width: 480px) {
+  .contact-hero h1 { font-size:34px; }
+  .contact-hero p, .intro { font-size:12px; }
+  .contact-info h2, .contact-card h2, .map-heading h2 { font-size:23px; }
+  .info-item { gap:12px; margin-top:18px; }
+  .info-icon { width:44px; height:44px; font-size:18px; }
+  .info-item h3 { font-size:14px; }
+  .info-item p { font-size:11px; overflow-wrap:anywhere; }
+  .contact-card { padding:20px 16px; }
+  .map-card { padding:16px; }
+  .map-wrapper { height:240px; }
+}
+
+/* ---------- LOGIN / REGISTER / RESET ---------- */
+.login-page, .register-page { width:100%; min-width:0; }
+@media (max-width: 700px) {
+  .login-page { padding:18px 12px; }
+  .login-card { width:min(100%,460px); }
+  .register-page { padding:16px 12px; }
+  .register-card { width:min(100%,460px); }
+}
+@media (max-width: 430px) {
+  .login-page { padding:12px 10px; }
+  .login-card { padding:18px 16px !important; border-radius:18px; }
+  .login-type-options, .type-options { grid-template-columns:1fr; }
+  .login-type, .type-option { min-height:40px; }
+  .form-options { flex-wrap:wrap; gap:8px; }
+  .illustration { max-width:100%; }
+  .brand img { max-width:48px; }
+  .register-page { padding:10px; }
+  .register-card { padding:20px 16px; border-radius:20px; }
+  .heading h1 { font-size:24px; }
+}
+
+/* ---------- PROFILE ---------- */
+@media (max-width: 900px) {
+  .profile-layout { grid-template-columns:1fr; }
+  .identity-card, .profile-side, .profile-bottom { width:100%; max-width:700px; margin-left:auto; margin-right:auto; }
+}
+@media (max-width: 560px) {
+  .profile-page { padding:16px 10px 30px; }
+  .profile-heading h1 { font-size:30px; }
+  .identity-footer { grid-template-columns:1fr; }
+  .profile-actions { grid-template-columns:1fr; }
+  .business-row { display:block; }
+  .business-row strong { display:block; text-align:left; margin-top:4px; }
+  .panel-card { padding:16px; }
+  .help-card { align-items:flex-start; }
+}
+
+/* ---------- APP PAGES: TABLET ---------- */
+@media (max-width: 1000px) {
+  .app { padding:18px 20px 45px; }
+  .app .site-navbar.app-site-navbar { margin:-18px -20px 18px; width:calc(100% + 40px); }
+  .app .grid { grid-template-columns:1fr; }
+  .app .grid3 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .app .stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .app .hero h2 { font-size:28px; }
+  .app .chart-wrap { height:280px; }
+}
+
+/* ---------- APP PAGES: PHONE ---------- */
+@media (max-width: 650px) {
+  .app { padding:12px 10px 35px; }
+  .app .site-navbar.app-site-navbar { margin:-12px -10px 14px; width:calc(100% + 20px); }
+  .app .hero { padding:18px 15px; border-radius:17px; }
+  .app .hero h2 { font-size:23px; }
+  .app .hero p { font-size:11px; line-height:1.6; }
+  .app .note { font-size:10px; line-height:1.55; padding:10px 11px; }
+  .app .grid, .app .grid3, .app .stats, .app .form, .app .compare { grid-template-columns:1fr; }
+  .app .card { padding:15px; border-radius:17px; }
+  .app .title { align-items:flex-start; flex-wrap:wrap; }
+  .app .title h3, .app .title h2 { font-size:15px; }
+  .app .form .full { grid-column:auto; }
+  .app .product-grid { grid-template-columns:1fr; }
+  .app .product { padding:12px; }
+  .app .actions { display:grid; grid-template-columns:1fr; }
+  .app .actions .btn { width:100%; }
+  .app .table { margin-left:-2px; margin-right:-2px; }
+  .app table { min-width:600px; font-size:10px; }
+  .app th, .app td { padding:8px; }
+  .app .chart-wrap, .app .chart-wrap.tall { height:230px; }
+  .app .scanner-box { grid-template-columns:1fr; }
+  .app .scanner-box button { width:100%; }
+  .app .compare-box .big { font-size:19px; }
+  .app .pill-row { gap:5px; }
+  .app .pill { font-size:9px; padding:6px 8px; }
+  .app input, .app select, .app textarea { font-size:12px; }
+}
+
+@media (max-width: 380px) {
+  .app { padding-left:8px; padding-right:8px; }
+  .app .site-navbar.app-site-navbar { margin-left:-8px; margin-right:-8px; width:calc(100% + 16px); }
+  .app .hero h2 { font-size:21px; }
+  .app .card { padding:12px; }
+  .app .stats { gap:8px; }
+  .app .stat { padding:11px; }
+  .app .stat strong { font-size:15px; }
+}
+
+/* ---------- SAFE FLEX / LONG TEXT ---------- */
+.flex, .row { min-width:0; }
+[class*="row"], [class*="grid"] { min-width:0; }
