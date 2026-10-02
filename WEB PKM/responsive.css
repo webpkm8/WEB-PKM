@@ -441,3 +441,153 @@ body { width:100%; min-width:0; max-width:100%; overflow-x:hidden; }
   .kasir-page .table tbody td:nth-child(2) .btn,
   .kasir-page .table tbody td:nth-child(5) .btn { width: 26px; min-width: 26px; height: 26px; }
 }
+
+
+/* Buku Kas: mobile layout fix */
+@media (max-width: 650px) {
+  .buku-kas-page .app {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .buku-kas-page .card {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .buku-kas-page .title {
+    gap: 8px;
+  }
+
+  .buku-kas-page .title h3 {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .buku-kas-page .title .btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .buku-kas-page .form {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .buku-kas-page .form > div,
+  .buku-kas-page .form .full {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .buku-kas-page .form .btn {
+    display: block;
+    width: 100% !important;
+    max-width: 100%;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .buku-kas-page .filters {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 8px !important;
+    width: 100%;
+  }
+
+  .buku-kas-page .filters input,
+  .buku-kas-page .filters select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Turn wide ledger tables into readable mobile cards. */
+  .buku-kas-page .table {
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+    border: 0;
+  }
+
+  .buku-kas-page .table table,
+  .buku-kas-page .table tbody,
+  .buku-kas-page .table tr,
+  .buku-kas-page .table td {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+  }
+
+  .buku-kas-page .table table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .buku-kas-page .table thead {
+    display: none;
+  }
+
+  .buku-kas-page .table tbody tr {
+    margin: 0 0 10px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(42,105,53,.05);
+  }
+
+  .buku-kas-page .table tbody td {
+    display: grid;
+    grid-template-columns: 92px minmax(0,1fr);
+    gap: 8px;
+    padding: 7px 0;
+    border-top: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  .buku-kas-page .table tbody td::before {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Buku Kas ledger */
+  .buku-kas-page #ledger td:nth-child(1)::before { content: "Tanggal"; }
+  .buku-kas-page #ledger td:nth-child(2)::before { content: "Keterangan"; }
+  .buku-kas-page #ledger td:nth-child(3)::before { content: "Jenis"; }
+  .buku-kas-page #ledger td:nth-child(4)::before { content: "Masuk"; }
+  .buku-kas-page #ledger td:nth-child(5)::before { content: "Keluar"; }
+  .buku-kas-page #ledger td:nth-child(6)::before { content: "Saldo"; }
+
+  /* Barang terjual */
+  .buku-kas-page #sales td:nth-child(1)::before { content: "Tanggal"; }
+  .buku-kas-page #sales td:nth-child(2)::before { content: "Barang"; }
+  .buku-kas-page #sales td:nth-child(3)::before { content: "Qty"; }
+  .buku-kas-page #sales td:nth-child(4)::before { content: "Harga"; }
+  .buku-kas-page #sales td:nth-child(5)::before { content: "Total"; }
+
+  .buku-kas-page .table .small {
+    overflow-wrap: anywhere;
+  }
+
+  .buku-kas-page .empty {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+  }
+}
+
+@media (max-width: 380px) {
+  .buku-kas-page .app { padding-left: 8px; padding-right: 8px; }
+  .buku-kas-page .card { padding: 12px; }
+  .buku-kas-page .table tbody td {
+    grid-template-columns: 78px minmax(0,1fr);
+    gap: 6px;
+  }
+  .buku-kas-page .title .btn { font-size: 10px; padding: 9px 10px; }
+}
