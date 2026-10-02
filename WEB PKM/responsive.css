@@ -272,3 +272,172 @@ body { width:100%; min-width:0; max-width:100%; overflow-x:hidden; }
   .app .actions { width:100%; }
   .app .actions > * { min-width:0; }
 }
+
+
+/* =========================================================
+   KASIR - MOBILE FINAL FIX
+   Tujuan: keranjang dan pembayaran tidak melebar/terpotong
+   pada HP kecil, tanpa mengubah tampilan laptop.
+========================================================= */
+@media (max-width: 650px) {
+  .kasir-page .app {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .kasir-page #scanForm {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 7px !important;
+    align-items: stretch;
+  }
+
+  .kasir-page #scanForm input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .kasir-page #scanAdd {
+    min-width: 78px !important;
+    width: auto;
+    white-space: nowrap;
+  }
+
+  /* Keranjang HP: ubah baris tabel menjadi kartu ringkas.
+     Semua informasi penting tetap terlihat tanpa horizontal scroll. */
+  .kasir-page .table {
+    overflow: visible !important;
+    width: 100%;
+    border: 0;
+  }
+
+  .kasir-page .table table {
+    width: 100%;
+    min-width: 0 !important;
+    table-layout: fixed;
+    display: block;
+  }
+
+  .kasir-page .table thead {
+    display: none;
+  }
+
+  .kasir-page .table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .kasir-page .table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "product qty remove"
+      "price total total";
+    gap: 7px 8px;
+    width: 100%;
+    padding: 11px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .kasir-page .table tbody tr:first-child {
+    border-top: 0;
+  }
+
+  .kasir-page .table tbody td {
+    min-width: 0;
+    width: auto;
+    padding: 0;
+    border: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .kasir-page .table tbody td:nth-child(1) { grid-area: product; }
+  .kasir-page .table tbody td:nth-child(2) { grid-area: qty; }
+  .kasir-page .table tbody td:nth-child(3) {
+    grid-area: price;
+    color: var(--muted);
+    font-size: 10px;
+  }
+  .kasir-page .table tbody td:nth-child(4) {
+    grid-area: total;
+    text-align: right;
+    font-size: 12px;
+  }
+  .kasir-page .table tbody td:nth-child(5) {
+    grid-area: remove;
+    justify-self: end;
+  }
+
+  .kasir-page .table tbody td:nth-child(1) b {
+    display: block;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .kasir-page .table tbody td:nth-child(1) .small {
+    display: block;
+    margin-top: 2px;
+    font-size: 8px;
+  }
+
+  .kasir-page .table tbody td:nth-child(2) > div {
+    gap: 3px !important;
+  }
+
+  .kasir-page .table tbody td:nth-child(2) .btn {
+    width: 28px;
+    min-width: 28px;
+    height: 28px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+  }
+
+  .kasir-page .table tbody td:nth-child(5) .btn {
+    width: 28px;
+    min-width: 28px;
+    height: 28px;
+    padding: 0;
+  }
+
+  .kasir-page #empty {
+    padding: 25px 8px;
+    text-align: center;
+    white-space: normal;
+  }
+
+  /* Pembayaran tetap satu kolom dan tidak melebar. */
+  .kasir-page .grid > .card:last-child {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .kasir-page .total {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .kasir-page .total span,
+  .kasir-page .total b {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .kasir-page #cash,
+  .kasir-page #checkout,
+  .kasir-page #clear {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .kasir-page .app { padding-left: 8px; padding-right: 8px; }
+  .kasir-page #scanForm { grid-template-columns: minmax(0, 1fr) 74px; }
+  .kasir-page #scanAdd { min-width: 74px !important; padding-left: 8px; padding-right: 8px; }
+  .kasir-page .table tbody tr { gap: 6px; }
+  .kasir-page .table tbody td:nth-child(2) .btn,
+  .kasir-page .table tbody td:nth-child(5) .btn { width: 26px; min-width: 26px; height: 26px; }
+}
