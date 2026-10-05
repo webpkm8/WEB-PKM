@@ -185,6 +185,53 @@
       }
     });
 
+
+    //logika kamera 
+    let codeReader = null;
+    let scannerControls = null;
+    const stopCamera = () => {
+      scannerControls?.stop();
+      scannerControls = null;
+      codeReader?.reset();
+      const video = $('cameraPreview');
+      video.srcObject?.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+      $('cameraModal').hidden = true;
+    };
+
+    $('openCamera').addEventListener('click', async () => {
+      if (!window.ZXing?.BrowserMultiFormatReader) {
+        toast('Scanner tidak bisa. coba Priksa internet.');
+        return;
+      }
+      $('cameraModal').hidden = false;
+      $('cameraStatus').textContent = 'Arahkan kamera ke barcode produk.';
+      const video = $('cameraPreview');
+      codeReader = new ZXing.BrowserMultiFormatReader();
+      try {
+        scannerControls = await codeReader.decodeFromVideoDevice(undefined, video, result => {
+          if (!result) return;
+          $('scan').value = result.getText();
+          stopCamera();
+          $('scanForm').requestSubmit();
+        });
+      } catch (error) {
+        $('cameraStatus').textContent = error.name === 'NotAllowedError'
+          ? 'Izin kamera denied. Kse izin akses kamera dlu.'
+          : 'Kamera tidak dapat dibuka. Pastikan kamera tersedia.';
+      }
+    });
+
+    $('closeCamera').addEventListener('click', stopCamera);
+    $('cameraModal').addEventListener('click', event => {
+      if (event.target === $('cameraModal')) stopCamera();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !$('cameraModal').hidden) stopCamera();
+    });
+    //smpe sini
+
+    
     $('cash').addEventListener('input', change);
     $('clear').addEventListener('click', () => {
       cart = [];

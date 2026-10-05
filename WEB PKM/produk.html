@@ -72,6 +72,7 @@ td{padding:10px;border-top:1px solid var(--line);vertical-align:top}
 .chart-wrap{position:relative;height:300px}.chart-wrap.tall{height:350px}
 .pill-row{display:flex;gap:7px;flex-wrap:wrap}.pill{padding:7px 10px;border-radius:99px;background:var(--soft);font-size:10px;font-weight:800;color:#367e3c}
 .scanner-box{display:grid;grid-template-columns:1fr 100px;gap:9px}.ingredient-card{padding:15px;border:1px solid var(--line);border-radius:15px;background:#fff}.ingredient-card h4{margin:0 0 8px}.ingredient-list{display:grid;gap:7px}.ingredient{display:flex;justify-content:space-between;padding:9px 10px;background:var(--soft2);border-radius:10px;font-size:11px}
+.camera-modal{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:18px;background:#102015bd}.camera-modal[hidden]{display:none}.camera-panel{width:min(520px,100%);padding:18px;background:#fff;border-radius:16px}.camera-panel video{display:block;width:100%;max-height:60vh;margin-top:12px;background:#111;border-radius:10px;object-fit:cover}.camera-status{min-height:1.5em;margin-top:10px;color:var(--muted);font-size:12px}
 @media(max-width:1000px){.grid{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.app{padding:14px 11px}.nav a{padding:8px 7px;font-size:10px}.hero h2{font-size:24px}.grid3,.stats,.form,.compare{grid-template-columns:1fr}.full{grid-column:auto}.scanner-box{grid-template-columns:1fr}}
 </style>    <script src="auth.js"></script>
@@ -94,7 +95,8 @@ td{padding:10px;border-top:1px solid var(--line);vertical-align:top}
 <div><label class="label">Harga Jual (Rp)</label><input id="price" type="number" min="1" placeholder="15000"></div>
 <div><label class="label">Harga Modal / HPP per unit (Rp)</label><input id="cost" type="number" min="0" placeholder="8000"></div>
 <div><label class="label">Kode Produk</label><input id="productCode" readonly placeholder="Otomatis saat produk dibuat"><div class="small" style="margin-top:5px">Kode dibuat otomatis dan unik untuk setiap produk.</div></div>
-<div class="full"><div class="note" style="margin:0 0 9px">🏷️ EAN-13 dibuat otomatis untuk setiap produk. Barcode dapat dipindai scanner kasir.</div><button id="add" class="btn primary" style="width:100%">＋ Simpan Produk & Buat EAN-13 Otomatis</button></div>
+<div><label class="label" for="barcodeInput">Barcode Produk</label><div style="display:flex;gap:7px"><input id="barcodeInput" inputmode="numeric" autocomplete="off" placeholder="Scan barcode atau otomatis"><button id="openProductCamera" type="button" class="btn secondary" aria-label="Buka kamera untuk scan barcode">📷 Scan</button></div><div class="small" style="margin-top:5px">Kosongkan untuk membuat barcode EAN-13 otomatis.</div></div>
+<div class="full"><div class="note" style="margin:0 0 9px">🏷️ Barcode hasil scan akan digunakan saat produk disimpan.</div><button id="add" class="btn primary" style="width:100%">＋ Simpan Produk</button></div>
 </div></div>
 <div class="card"><div class="title"><h3>Hubungan Fitur</h3></div>
 <div class="pill-row"><span class="pill">🏷️ Barcode</span><span class="pill">🧮 Kasir</span><span class="pill">📦 Storage</span><span class="pill">🧪 Ingredient</span></div>
@@ -102,7 +104,13 @@ td{padding:10px;border-top:1px solid var(--line);vertical-align:top}
 </div></div>
 <div class="card" style="margin-top:16px"><div class="title"><h3>Daftar Produk <span id="count" class="tag">0 produk</span></h3></div><div id="list" class="product-grid"></div><div id="empty" class="empty">Belum ada produk.</div></div>
 
-</div><div id="toast" class="toast"></div><script>
+</div><div id="toast" class="toast"></div>
+<div id="productCameraModal" class="camera-modal" role="dialog" aria-modal="true" aria-labelledby="productCameraTitle" hidden>
+<div class="camera-panel"><div class="title"><h3 id="productCameraTitle">Scan Barcode Produk</h3><button id="closeProductCamera" type="button" class="btn secondary" aria-label="Tutup kamera">Tutup</button></div>
+<video id="productCameraPreview" autoplay muted playsinline></video><div id="productCameraStatus" class="camera-status" role="status">Arahkan kamera ke barcode produk.</div></div></div>
+<script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js" defer></script><script>
+
+
 KasirAuth.ready.then(async () => {
 const STORE={
  products:KasirAuth.key("products"),
@@ -119,7 +127,34 @@ const today=()=>new Date().toISOString().slice(0,10);
 const toast=s=>{let t=$("toast");if(!t)return;t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)};
 const fmtDate=d=>new Date(d).toLocaleDateString("id-ID",{day:"2-digit",month:"2-digit",year:"numeric"});
 
+
+
 let products=load(STORE.products,[]);
+let productScanner=null;
+let productScannerControls=null;
+const stopProductCamera=()=>{
+ productScannerControls?.stop();productScannerControls=null;productScanner?.reset();
+ const video=$("productCameraPreview");video.srcObject?.getTracks().forEach(track=>track.stop());video.srcObject=null;
+ $("productCameraModal").hidden=true;
+};
+$("openProductCamera").addEventListener("click",async()=>{
+ if(!window.ZXing?.BrowserMultiFormatReader){toast("Pemindai barcode tidak dapat dimuat. Periksa koneksi internet.");return;}
+ $("productCameraModal").hidden=false;$("productCameraStatus").textContent="Arahkan kamera ke barcode produk.";
+ const video=$("productCameraPreview");productScanner=new ZXing.BrowserMultiFormatReader();
+ try{
+  productScannerControls=await productScanner.decodeFromVideoDevice(undefined,video,result=>{
+   if(!result)return;
+   $("barcodeInput").value=result.getText();stopProductCamera();toast("Barcode berhasil dipindai.");
+  });
+ }catch(error){
+  $("productCameraStatus").textContent=error.name==="NotAllowedError"?"Izin kamera ditolak. Izinkan akses kamera di browser lalu coba lagi.":"Kamera tidak dapat dibuka. Pastikan kamera tersedia dan halaman memakai localhost atau HTTPS.";
+ }
+});
+$("closeProductCamera").addEventListener("click",stopProductCamera);
+$("productCameraModal").addEventListener("click",event=>{if(event.target===$("productCameraModal"))stopProductCamera()});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!$("productCameraModal").hidden)stopProductCamera()});
+
+
 function randomDigits(length){
   let out="";
   while(out.length<length) out += Math.floor(Math.random()*10);
@@ -199,8 +234,12 @@ function addProduct(){
  if(!name){toast("Nama produk wajib diisi");$("name").focus();return;}
  if(!Number.isFinite(price)||price<=0){toast("Harga jual harus lebih dari 0");$("price").focus();return;}
  if(!Number.isFinite(cost)||cost<0){toast("HPP tidak boleh negatif");$("cost").focus();return;}
+
+ const scannedBarcode=$("barcodeInput").value.trim();
+ if(scannedBarcode&&barcodeExists(scannedBarcode)){toast("Barcode sudah digunakan oleh produk lain.");$("barcodeInput").focus();return;}
  const code=genProductCode();
- const barcode=genEAN13();
+ const barcode=scannedBarcode||genEAN13();
+
  const product={
    id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
    name,
@@ -220,6 +259,9 @@ function addProduct(){
  $("name").value="";
  $("price").value="";
  $("cost").value="";
+
+ $("barcodeInput").value="";
+ 
  $("productCode").value=genProductCode();
  render();
  toast(`Produk ${name} berhasil ditambahkan ✓`);

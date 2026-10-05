@@ -70,42 +70,158 @@ td{padding:10px;border-top:1px solid var(--line);vertical-align:top}
 .chart-wrap{position:relative;height:300px}.chart-wrap.tall{height:350px}
 .pill-row{display:flex;gap:7px;flex-wrap:wrap}.pill{padding:7px 10px;border-radius:99px;background:var(--soft);font-size:10px;font-weight:800;color:#367e3c}
 .scanner-box{display:grid;grid-template-columns:1fr 100px;gap:9px}.ingredient-card{padding:15px;border:1px solid var(--line);border-radius:15px;background:#fff}.ingredient-card h4{margin:0 0 8px}.ingredient-list{display:grid;gap:7px}.ingredient{display:flex;justify-content:space-between;padding:9px 10px;background:var(--soft2);border-radius:10px;font-size:11px}
+   
+     
+    .scan-controls{
+        display:flex;gap:8px}
+    .scan-controls input{
+        min-width:0;flex:1}
+    .camera-modal {
+        position:fixed;
+        inset:0;
+        z-index:100;
+        display:grid;
+        place-items:center;
+        padding:18px;
+        background:#102015bd 
+    }
+    .camera-modal[hidden] {
+        display:none }
+    .camera-panel {
+        width:min(520px,100%);
+        padding:18px;
+        background:#fff;
+        border-radius:16px
+    }
+    .camera-panel video {
+        display:block;
+        width:100%;
+        max-height:60vh;
+        margin-top:12px;
+        background:#111;
+        border-radius:10px;
+        object-fit:cover 
+    }
+    .camera-status {
+        min-height:1.5em;
+        margin-top:10px;
+        color:var(--muted);
+        font-size:12px
+    }  
+    
+
 @media(max-width:1000px){.grid{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.app{padding:14px 11px}.nav a{padding:8px 7px;font-size:10px}.hero h2{font-size:24px}.grid3,.stats,.form,.compare{grid-template-columns:1fr}.full{grid-column:auto}.scanner-box{grid-template-columns:1fr}}
 </style>    <script src="auth.js"></script>
 <link rel="stylesheet" href="shared-navbar.css">
 <link rel="stylesheet" href="responsive.css">
-</head><body class="kasir-page"><div class="app">
-<header class="site-navbar app-site-navbar"><div class="site-navbar-inner">
-<a href="index.html" class="site-brand"><img src="logo.png" alt="Web PKM"><span class="site-brand-text"><strong>Our Journey</strong><small>Sistem Kasir Online</small></span></a>
-<button class="site-menu-toggle" id="siteMenuToggle" type="button" aria-label="Buka menu" aria-expanded="false"><span></span><span></span><span></span></button>
-<nav class="site-nav" id="siteNav">
-<a href="index.html">Beranda</a><a href="fitur.html" class="active">Fitur</a><a href="panduan.html">Panduan</a><a href="tentang.html">Tentang Kami</a><a href="kontak.html">Kontak</a>
-<a href="login.html" class="site-account login-button"><span class="account-avatar" data-account-avatar>U</span><span class="account-label">Masuk</span></a>
-</nav></div></header>
+</head><body>
 
-<div class="hero"><h2><span>Kasir</span> Online</h2><p>Masukkan Kode Identifikasi barcode produk yang dibuat di halaman Pembuatan Kode Identifikasi Barcode Produk. Saat transaksi selesai dan struk dicetak, transaksi dan barang yang dibeli otomatis masuk ke Buku Kas, Dashboard, Perbandingan, dan stok Storage.</p><div class="note">🔗 Scan → keranjang → bayar → <b>Selesaikan & Cetak Struk</b> → otomatis catat penjualan + kurangi stok.</div></div>
-<div class="grid">
-<div>
-<div class="card"><div class="title"><h3>Masukkan Kode Identifikasi</h3><span class="tag">Transaksi</span></div>
-<form id="scanForm" style="display:flex;gap:8px" autocomplete="off">
-<input id="scan" name="barcode" placeholder="Scan / ketik barcode lalu Enter" autofocus inputmode="numeric" autocomplete="off" aria-label="Kode barcode">
-<button id="scanAdd" type="submit" class="btn primary" style="min-width:96px">Tambah</button>
-</form>
-<div id="scanHint" class="small" style="margin-top:8px">Tekan Enter atau klik Tambah untuk memasukkan produk ke keranjang.</div>
-<div id="quick" class="product-grid" style="margin-top:13px"></div>
-</div>
-<div class="card" style="margin-top:16px"><div class="title"><h3>Keranjang</h3><span id="items" class="tag">0 item</span></div>
-<div class="table"><table><thead><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Total</th><th></th></tr></thead><tbody id="cart"></tbody></table><div id="empty" class="empty">🛒 Keranjang masih kosong.</div></div></div>
-</div>
-<div class="card"><div class="title"><h3>Pembayaran</h3></div>
-<div class="total" style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed var(--line)"><span>Total Belanja</span><b id="total" class="money in">Rp 0</b></div>
-<label class="label" style="margin-top:14px">Uang Diterima</label><input id="cash" type="number" min="0" placeholder="0">
-<div id="change" class="change" style="margin-top:12px;padding:13px;border-radius:13px;background:var(--soft);border:1px solid #b8dfb2;display:flex;justify-content:space-between"><b>Kembalian</b><b id="changeVal" class="money in">Rp 0</b></div>
-<button id="checkout" class="btn primary" style="width:100%;margin-top:14px" disabled>🧾 Selesaikan & Cetak Struk</button>
-<button id="clear" class="btn secondary" style="width:100%;margin-top:8px">🗑️ Kosongkan</button>
-</div></div>
 
-</div><div id="toast" class="toast"></div>
+<div class="app">
+    <header class="site-navbar app-site-navbar">
+        <div class="site-navbar-inner">
+            <a href="index.html" class="site-brand">
+                <img src="logo.png" alt="Web PKM">
+                <span class="site-brand-text">
+                    <strong>Our Journey</strong>
+                    <small>Sistem Kasir Online</small>
+                </span>
+            </a>
+
+            <button class="site-menu-toggle" id="siteMenuToggle" type="button" aria-label="Buka menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+            </button>
+
+            <nav class="site-nav" id="siteNav">
+                <a href="index.html">Beranda</a>
+                <a href="fitur.html" class="active">Fitur</a>
+                <a href="panduan.html">Panduan</a>
+                <a href="tentang.html">Tentang Kami</a>
+                <a href="kontak.html">Kontak</a>
+                <a href="login.html" class="site-account login-button">
+                    <span class="account-avatar" data-account-avatar>U</span>
+                    <span class="account-label">Masuk</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="hero">
+        <h2>
+            <span>Kasir</span> Online
+        </h2>
+        <p>Masukkan Kode Identifikasi barcode produk yang dibuat di halaman Pembuatan Kode Identifikasi Barcode Produk. Saat transaksi selesai dan struk dicetak, transaksi dan barang yang dibeli otomatis masuk ke Buku Kas, Dashboard, Perbandingan, dan stok Storage.</p>
+        <div class="note">🔗 Scan → keranjang → bayar → <b>Selesaikan & Cetak Struk</b> → otomatis catat penjualan + kurangi stok.</div>
+    </div>
+
+    <div class="grid">
+        <div>
+
+            <div class="card"><div class="title"><h3>Masukkan Kode Identifikasi</h3><span class="tag">Transaksi</span></div>
+                <form id="scanForm" style="display:flex;gap:8px" autocomplete="off">
+                    <input id="scan" name="barcode" placeholder="Scan / ketik barcode lalu Enter" autofocus inputmode="numeric" autocomplete="off" aria-label="Kode barcode">
+                    <button id="scanAdd" type="submit" class="btn primary" style="min-width:96px">Tambah</button>
+                </form>
+
+                <button id="openCamera" type="button" class="btn secondary" style="width:100%;margin-top:8px">Buka Kamera untuk Scan Barcode</button>
+                <div id="scanHint" class="small" style="margin-top:8px">
+                    Tekan Enter atau klik Tambah untuk memasukkan produk ke keranjang.
+                </div>
+                <div id="quick" class="product-grid" style="margin-top:13px"></div>
+            </div>
+
+            <div class="card" style="margin-top:16px">
+                <div class="title"><h3>Keranjang</h3><span id="items" class="tag">0 item</span></div>
+                <div class="table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Produk</th>
+                                <th>Qty</th>
+                                <th>Harga</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart"></tbody>
+                    </table>
+                    <div id="empty" class="empty">🛒 Keranjang masih kosong.</div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="title"><h3>Pembayaran</h3></div>
+            <div class="total" style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed var(--line)">
+                <span>Total Belanja</span>
+                <b id="total" class="money in">Rp 0</b>
+            </div>
+            <label class="label" style="margin-top:14px">Uang Diterima</label>
+            <input id="cash" type="number" min="0" placeholder="0">
+            <div id="change" class="change" style="margin-top:12px;padding:13px;border-radius:13px;background:var(--soft);border:1px solid #b8dfb2;display:flex;justify-content:space-between">
+                <b>Kembalian</b>
+                <b id="changeVal" class="money in">Rp 0</b>
+            </div>
+            <button id="checkout" class="btn primary" style="width:100%;margin-top:14px" disabled>🧾 Selesaikan & Cetak Struk</button>
+            <button id="clear" class="btn secondary" style="width:100%;margin-top:8px">🗑️ Kosongkan</button>
+        </div>
+    </div>
+</div>
+<div id="cameraModal" class="camera-modal" role="dialog" aria-modal="true" aria-labelledby="cameraTitle" hidden>
+    <div class="camera-panel">
+        <div class="title">
+            <h3 id="cameraTitle">Scan Barcode</h3>
+            <button id="closeCamera" type="button" class="btn secondary" aria-label="Tutup kamera">Tutup</button>
+        </div>
+        <video id="cameraPreview" autoplay muted playsinline></video>
+        <div id="cameraStatus" class="camera-status" role="status">Menghubungkan kamera...</div>
+    </div>
+</div>
+<div id="toast" class="toast"></div>
+<script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js" defer></script>
 <script src="kasir.js" defer></script>
-<script src="shared-navbar.js"></script></body></html>
+<script src="shared-navbar.js"></script>
+</body>
+</html>
