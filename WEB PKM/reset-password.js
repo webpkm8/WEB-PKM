@@ -45,11 +45,9 @@
       await KasirAuth.ready;
       const { data: { session } } = await KasirAuth.client.auth.getSession();
       if (!session) throw new Error('Sesi reset tidak ditemukan. Silakan minta link reset password baru.');
-
       const { error } = await KasirAuth.client.auth.updateUser({ password: password.value });
       if (error) throw error;
-
-      showStatus('Password berhasil diubah. Silakan login dengan password baru.', true);
+      showStatus('Password berhasil diperbarui. Silakan masuk kembali.', true);
       setTimeout(() => { location.href = 'login.html'; }, 1200);
     } catch (err) {
       showStatus(friendlyError(err));

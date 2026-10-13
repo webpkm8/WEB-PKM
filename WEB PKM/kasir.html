@@ -107,7 +107,9 @@ td{padding:10px;border-top:1px solid var(--line);vertical-align:top}
         margin-top:10px;
         color:var(--muted);
         font-size:12px
-    }  
+    }
+    .camera-switch{width:100%;min-height:44px;margin-top:10px}
+    .camera-switch:disabled{cursor:not-allowed;opacity:.55}
     
 
 @media(max-width:1000px){.grid{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}}
@@ -216,6 +218,7 @@ td{padding:10px;border-top:1px solid var(--line);vertical-align:top}
             <button id="closeCamera" type="button" class="btn secondary" aria-label="Tutup kamera">Tutup</button>
         </div>
         <video id="cameraPreview" autoplay muted playsinline></video>
+        <button id="switchCamera" type="button" class="btn secondary camera-switch" aria-label="Ganti kamera">🔄 Ganti kamera</button>
         <div id="cameraStatus" class="camera-status" role="status">Menghubungkan kamera...</div>
     </div>
 </div>

@@ -1,5 +1,165 @@
-/* Web PKM - Kasir Online (alur barcode aman, tanpa inline script) */
+
 (() => {
+  const setupCameraScanner = () => {
+    const $ = id => document.getElementById(id);
+    let reader = null;
+    let controls = null;
+    let devices = [];
+    let activeDeviceId = null;
+    let facingMode = 'environment';
+    let generation = 0;
+    let ready = false;
+    let pendingBarcode = null;
+
+    const showStatus = message => { $('cameraStatus').textContent = message; };
+    const stopStream = () => {
+      controls?.stop();
+      controls = null;
+      reader?.reset();
+      const video = $('cameraPreview');
+      video.srcObject?.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+      activeDeviceId = null;
+    };
+    const stop = () => {
+      generation++;
+      stopStream();
+      $('cameraModal').hidden = true;
+    };
+    const emitBarcode = code => {
+      if (!ready) {
+        pendingBarcode = code;
+        return;
+      }
+      window.dispatchEvent(new CustomEvent('kasir:barcode-detected', { detail: { code } }));
+    };
+    const cameraErrorMessage = error => {
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        return 'Izin kamera ditolak. Izinkan akses kamera untuk situs ini di pengaturan browser.';
+      }
+      if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        return 'Kamera tidak ditemukan. Pastikan perangkat memiliki kamera yang dapat digunakan.';
+      }
+      if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        return 'Kamera sedang dipakai aplikasi lain. Tutup aplikasi tersebut lalu coba lagi.';
+      }
+      return 'Kamera gagal dibuka. Pastikan halaman memakai HTTPS atau localhost, izin kamera aktif, dan kamera tidak sedang dipakai aplikasi lain.';
+    };
+    const refreshDevices = async () => {
+      if (!navigator.mediaDevices?.enumerateDevices) {
+        devices = [];
+        return false;
+      }
+      try {
+        devices = (await navigator.mediaDevices.enumerateDevices())
+          .filter(device => device.kind === 'videoinput');
+      } catch (error) {
+        console.error('Daftar kamera tidak dapat dibaca:', error);
+        devices = [];
+        $('switchCamera').disabled = true;
+        showStatus('Kamera aktif, tetapi daftar kamera tambahan tidak dapat dibaca.');
+        return false;
+      }
+      activeDeviceId = $('cameraPreview').srcObject?.getVideoTracks()[0]?.getSettings().deviceId || activeDeviceId;
+      $('switchCamera').disabled = devices.length < 2;
+      $('switchCamera').textContent = devices.length < 2
+        ? '🔄 Hanya satu kamera tersedia'
+        : `🔄 Ganti ke kamera ${facingMode === 'environment' ? 'depan' : 'belakang'}`;
+      return true;
+    };
+    const start = async (deviceId, isFallback = false) => {
+      stopStream();
+      const requestId = ++generation;
+      $('switchCamera').disabled = true;
+      showStatus('Menghubungkan kamera...');
+      try {
+        const nextReader = new ZXing.BrowserMultiFormatReader();
+        reader = nextReader;
+        const nextControls = await nextReader.decodeFromVideoDevice(
+          deviceId || undefined,
+          $('cameraPreview'),
+          result => {
+            if (requestId !== generation || !result) return;
+            const code = result.getText();
+            stop();
+            emitBarcode(code);
+          }
+        );
+        if (requestId !== generation) {
+          nextControls.stop();
+          nextReader.reset();
+          return;
+        }
+        controls = nextControls;
+        if (await refreshDevices()) showStatus('Arahkan kamera ke barcode produk.');
+      } catch (error) {
+        if (requestId !== generation) return;
+        if (!deviceId && !isFallback && error.name !== 'NotAllowedError' && navigator.mediaDevices?.enumerateDevices) {
+          try {
+            const available = (await navigator.mediaDevices.enumerateDevices())
+              .filter(device => device.kind === 'videoinput');
+            if (available.length) {
+              await start(available[0].deviceId, true);
+              return;
+            }
+          } catch (enumerationError) {
+            console.error('Daftar kamera fallback tidak dapat dibaca:', enumerationError);
+          }
+        }
+        showStatus(cameraErrorMessage(error));
+        $('switchCamera').disabled = false;
+      }
+    };
+
+    $('openCamera').addEventListener('click', async () => {
+      $('cameraModal').hidden = false;
+      facingMode = 'environment';
+      $('switchCamera').textContent = '🔄 Ganti ke kamera depan';
+      if (!window.ZXing?.BrowserMultiFormatReader) {
+        showStatus('Pemindai barcode belum termuat. Muat ulang halaman dan periksa koneksi internet.');
+        return;
+      }
+      if (window.isSecureContext === false || !navigator.mediaDevices?.getUserMedia) {
+        showStatus('Browser memblokir kamera di alamat ini. Buka aplikasi melalui HTTPS atau localhost.');
+        return;
+      }
+      await start();
+    });
+    $('switchCamera').addEventListener('click', async () => {
+      if (devices.length < 2) return;
+      const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+      const labelPattern = nextMode === 'user' ? /front|user|fac(e|ing)/i : /back|rear|environment|world/i;
+      const nextDevice = devices.find(device => device.deviceId !== activeDeviceId && labelPattern.test(device.label))
+        || devices.find(device => device.deviceId !== activeDeviceId);
+      if (!nextDevice) {
+        showStatus('Tidak ditemukan kamera lain yang dapat digunakan.');
+        return;
+      }
+      facingMode = nextMode;
+      await start(nextDevice.deviceId);
+    });
+    $('closeCamera').addEventListener('click', stop);
+    $('cameraModal').addEventListener('click', event => {
+      if (event.target === $('cameraModal')) stop();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !$('cameraModal').hidden) stop();
+    });
+
+    return {
+      setReady() {
+        ready = true;
+        if (pendingBarcode !== null) {
+          const code = pendingBarcode;
+          pendingBarcode = null;
+          emitBarcode(code);
+        }
+      }
+    };
+  };
+
+  const cameraScanner = setupCameraScanner();
+
   const boot = async () => {
     try {
       await KasirAuth.ready;
@@ -105,7 +265,7 @@
       cart.forEach((item, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td><b>${esc(item.name)}</b><div class="small">${esc(item.barcode)}</div></td>
+          <td><b>${esc(item.name)}</b><div class="small">Kode Produk: ${esc(item.code || item.productCode || '—')}</div><div class="small">Barcode: ${esc(item.barcode)}</div></td>
           <td>
             <div style="display:flex;gap:5px;align-items:center">
               <button type="button" class="btn secondary qd">−</button>
@@ -148,7 +308,8 @@
         <button type="button" class="product" style="text-align:left;cursor:pointer" data-code="${esc(product.barcode)}">
           <h4>${esc(product.name)}</h4>
           <div class="price">${rp(product.price)}</div>
-          <div class="small">Stok ${Number(product.stock || 0)} · ${esc(product.barcode)}</div>
+          <div class="small">Kode Produk: ${esc(product.code || product.productCode || '—')}</div>
+          <div class="small">Stok ${Number(product.stock || 0)} · Barcode: ${esc(product.barcode)}</div>
         </button>`).join('');
       box.querySelectorAll('[data-code]').forEach(button => {
         button.onclick = () => add(button.dataset.code);
@@ -186,52 +347,12 @@
     });
 
 
-    //logika kamera 
-    let codeReader = null;
-    let scannerControls = null;
-    const stopCamera = () => {
-      scannerControls?.stop();
-      scannerControls = null;
-      codeReader?.reset();
-      const video = $('cameraPreview');
-      video.srcObject?.getTracks().forEach(track => track.stop());
-      video.srcObject = null;
-      $('cameraModal').hidden = true;
-    };
-
-    $('openCamera').addEventListener('click', async () => {
-      if (!window.ZXing?.BrowserMultiFormatReader) {
-        toast('Scanner tidak bisa. coba Priksa internet.');
-        return;
-      }
-      $('cameraModal').hidden = false;
-      $('cameraStatus').textContent = 'Arahkan kamera ke barcode produk.';
-      const video = $('cameraPreview');
-      codeReader = new ZXing.BrowserMultiFormatReader();
-      try {
-        scannerControls = await codeReader.decodeFromVideoDevice(undefined, video, result => {
-          if (!result) return;
-          $('scan').value = result.getText();
-          stopCamera();
-          $('scanForm').requestSubmit();
-        });
-      } catch (error) {
-        $('cameraStatus').textContent = error.name === 'NotAllowedError'
-          ? 'Izin kamera denied. Kse izin akses kamera dlu.'
-          : 'Kamera tidak dapat dibuka. Pastikan kamera tersedia.';
-      }
+    window.addEventListener('kasir:barcode-detected', event => {
+      $('scan').value = event.detail.code;
+      $('scanForm').requestSubmit();
     });
+    cameraScanner.setReady();
 
-    $('closeCamera').addEventListener('click', stopCamera);
-    $('cameraModal').addEventListener('click', event => {
-      if (event.target === $('cameraModal')) stopCamera();
-    });
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && !$('cameraModal').hidden) stopCamera();
-    });
-    //smpe sini
-
-    
     $('cash').addEventListener('input', change);
     $('clear').addEventListener('click', () => {
       cart = [];
@@ -253,7 +374,11 @@
         items: cart.map(item => ({
           id: item.id,
           name: item.name,
+          code: item.code || item.productCode || '',
+          productCode: item.productCode || item.code || '',
           barcode: item.barcode,
+          owner: item.owner || '',
+          ownerCode: item.ownerCode || '',
           qty: item.qty,
           price: Number(item.price || 0),
           cost: Number(item.cost || 0),
@@ -273,6 +398,26 @@
         if (sold) product.stock = Math.max(0, Number(product.stock || 0) - sold.qty);
       });
       save(STORE.products, products);
+      const stockSaleMovements = cart
+        .filter(item => /^\d{4}$/.test(String(item.ownerCode || '')))
+        .map(item => ({
+          product_id: item.id,
+          product_code: item.code || item.productCode,
+          product_name: item.name,
+          owner_code: item.ownerCode,
+          owner_name: item.owner,
+          movement_type: 'sale',
+          quantity: item.qty,
+          gross_amount: Number(item.total) || Number(item.price || 0) * item.qty,
+          occurred_at: sale.date,
+          sale_id: sale.id
+        }));
+      if (stockSaleMovements.length) {
+        KasirAuth.recordStockMovements(stockSaleMovements).catch(error => {
+          console.error('Riwayat penjualan stok gagal disinkronkan:', error);
+          toast(`Transaksi tersimpan, tetapi rekap stok belum tersinkron: ${error.message}`);
+        });
+      }
 
       const cash = load(STORE.cash, []);
       cash.push({

@@ -3,20 +3,18 @@
   const SUPABASE_URL = 'https://uxhojcovzajbfyufutcr.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_VqAL6sNI9-mgdpuJAifGsQ_6PeXbNQu';
   const DATA_NAMES = ['products','sales','cash','expenses'];
-  const ROLE_KEY = 'kasirTokoRole';
-  const BUSINESS_KEY = 'kasirTokoBusiness';
   const SESSION_KEY = 'kasirTokoSupabaseSession';
   const CURRENT_KEY = 'kasirTokoCurrentUser';
   const LOGIN_KEY = 'kasirTokoLoggedIn';
   const publicPages = ['index.html','login.html','register.html','panduan.html','tentang.html','kontak.html','reset-password.html',''];
   const protectedPages = ['dashboard.html','kasir.html','produk.html','storage.html','buku-kas.html','perbandingan.html','scan-ingredient.html'];
-  const umkmAllowedPages = ['storage.html'];
   const file = (location.pathname.split('/').pop() || '').toLowerCase();
   let hydrating = false;
   let session = null;
   let currentUser = null;
-  let currentBusiness = null;
+  let currentProfile = null;
   let client = null;
+  const loadedProductTenantIds = new Set();
 
   const jsonError = async response => {
     let body = null;
@@ -39,97 +37,56 @@
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
     script.async = true;
-    script.crossOrigin = 'anonymous';
     script.dataset.supabaseClient = 'true';
-    let settled = false;
-    const finish = (fn, value) => { if (settled) return; settled = true; fn(value); };
-    script.onload = () => window.supabase?.createClient ? finish(resolve, window.supabase) : finish(reject, new Error('Supabase JS gagal dimuat.'));
-    script.onerror = () => finish(reject, new Error('Tidak dapat memuat Supabase JS. Pastikan internet aktif.'));
-    setTimeout(() => finish(reject, new Error('Supabase JS terlalu lama dimuat.')), 12000);
+    script.onload = () => window.supabase?.createClient ? resolve(window.supabase) : reject(new Error('Supabase JS gagal dimuat.'));
+    script.onerror = () => reject(new Error('Tidak dapat memuat Supabase JS. Pastikan internet aktif.'));
     document.head.appendChild(script);
   });
 
   const slug = value => String(value).replace(/[^a-zA-Z0-9_-]/g, '_');
-  const localKey = name => {
-    const businessId = currentBusiness?.business_id;
-    return businessId ? `kt_business_${slug(businessId)}_${name}_v7` : (currentUser ? `kt_user_${slug(currentUser.id)}_${name}_v6` : `kt_guest_${name}_v7`);
-  };
+  const localKey = name => currentUser ? `kt_user_${slug(currentUser.id)}_${name}_v6` : `kt_guest_${name}_v6`;
   const readLocal = (key, fallback) => { try { const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback; } catch { return fallback; } };
   const writeLocal = (key, value) => localStorage.setItem(key, JSON.stringify(value));
-  const writeLocalOnly = (key, value) => originalSetItem(key, JSON.stringify(value));
-  currentBusiness = readLocal(BUSINESS_KEY, null);
+  const reportCloudError = error => {
+    const message = error?.message || 'Periksa koneksi dan kebijakan akses Supabase.';
+    console.error('Sinkronisasi Supabase gagal:', message);
+    window.dispatchEvent(new CustomEvent('kasir:cloud-error', { detail: { message } }));
+  };
 
   async function saveCloud(name, value) {
-    if (!client || !session?.access_token || !currentUser || !currentBusiness?.business_id || hydrating) return;
-    const businessId = currentBusiness.business_id;
-    const payload = {
+    if (!client || !session?.access_token || !currentUser || hydrating) return;
+    if (name === 'products' && ['admin', 'cashier'].includes(currentProfile?.role)) {
+      const grouped = new Map();
+      for (const product of Array.isArray(value) ? value : []) {
+        const tenantId = product._tenantUserId || currentUser.id;
+        if (!grouped.has(tenantId)) grouped.set(tenantId, []);
+        const { _tenantUserId, ...storedProduct } = product;
+        grouped.get(tenantId).push(storedProduct);
+      }
+      for (const tenantId of loadedProductTenantIds) {
+        if (!grouped.has(tenantId)) grouped.set(tenantId, []);
+      }
+      if (!grouped.has(currentUser.id)) grouped.set(currentUser.id, []);
+      const results = await Promise.all([...grouped].map(([userId, products]) =>
+        client.from('user_data').upsert({
+          user_id: userId,
+          key: 'products',
+          value: products,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,key' })
+      ));
+      results.forEach(({ error }) => {
+        if (error) reportCloudError(error);
+      });
+      return;
+    }
+    const { error } = await client.from('user_data').upsert({
       user_id: currentUser.id,
-      business_id: businessId,
       key: name,
       value,
       updated_at: new Date().toISOString()
-    };
-    // Satu baris untuk satu data per usaha. Upsert mencegah konflik saat
-    // Owner/UMKM menyimpan perubahan hampir bersamaan.
-    const { error } = await client
-      .from('user_data')
-      .upsert(payload, { onConflict: 'business_id,key' });
-    if (error) console.warn('Gagal sinkronisasi cloud:', error.message);
-  }
-
-  async function hydrateCloud() {
-    if (!client || !currentUser || !session?.access_token || !currentBusiness?.business_id) return;
-    hydrating = true;
-    try {
-      const { data, error } = await client
-        .from('user_data')
-        .select('key,value')
-        .eq('business_id', currentBusiness.business_id);
-      if (error) throw error;
-      for (const row of (data || [])) {
-        if (DATA_NAMES.includes(row.key)) {
-          originalSetItem(localKey(row.key), JSON.stringify(row.value ?? []));
-        }
-      }
-    } catch (error) {
-      console.warn('Gagal memuat data usaha dari cloud:', error.message);
-    } finally {
-      hydrating = false;
-    }
-  }
-
-  async function connectBusiness(code) {
-    const clean = String(code || '').trim().toUpperCase();
-    if (!clean) throw new Error('Kode usaha wajib diisi.');
-    const { data, error } = await client.rpc('connect_business', { p_code: clean });
-    if (error) throw error;
-    currentBusiness = data;
-    writeLocal(BUSINESS_KEY, currentBusiness);
-    writeLocal(ROLE_KEY, currentBusiness.role);
-    return currentBusiness;
-  }
-
-  async function connectOwnerBusiness() {
-    if (!currentUser?.id) throw new Error('Akun belum siap.');
-    const { data: profile, error: profileError } = await client.from('profiles').select('role,business_id').eq('user_id', currentUser.id).maybeSingle();
-    if (profileError) throw profileError;
-    const userRole = profile?.role || currentUser?.user_metadata?.role || 'owner';
-    if (userRole !== 'owner') throw new Error('Akun UMKM wajib memasukkan kode usaha Owner.');
-    let business = null;
-    if (profile?.business_id) {
-      const { data, error } = await client.from('businesses').select('id,owner_id,business_code,name').eq('id', profile.business_id).maybeSingle();
-      if (error) throw error;
-      business = data;
-    } else {
-      const { data, error } = await client.from('businesses').select('id,owner_id,business_code,name').eq('owner_id', currentUser.id).maybeSingle();
-      if (error) throw error;
-      business = data;
-    }
-    if (!business) throw new Error('Data usaha Owner belum ditemukan. Jalankan SQL sistem Owner/UMKM terlebih dahulu.');
-    currentBusiness = { role: 'owner', business_id: business.id, business_code: business.business_code, owner_id: business.owner_id, name: business.name };
-    writeLocal(BUSINESS_KEY, currentBusiness);
-    writeLocal(ROLE_KEY, 'owner');
-    return currentBusiness;
+    }, { onConflict: 'user_id,key' });
+    if (error) reportCloudError(error);
   }
 
   const originalSetItem = localStorage.setItem.bind(localStorage);
@@ -139,130 +96,199 @@
       let parsed = value;
       try { parsed = JSON.parse(value); } catch {}
       const name = DATA_NAMES.find(n => key === localKey(n));
-      if (name) saveCloud(name, parsed);
+      if (name) void saveCloud(name, parsed).catch(reportCloudError);
     }
   };
+
+  async function hydrateCloud() {
+    if (!client || !currentUser || !session?.access_token) return;
+    hydrating = true;
+    try {
+      let query = client.from('user_data').select('user_id,key,value');
+      if (!['admin', 'cashier'].includes(currentProfile?.role)) query = query.eq('user_id', currentUser.id);
+      const { data, error } = await query;
+      if (error) throw error;
+      const allProducts = [];
+      loadedProductTenantIds.clear();
+      for (const row of (data || [])) {
+        if (row.key === 'products') {
+          loadedProductTenantIds.add(row.user_id);
+          const products = Array.isArray(row.value) ? row.value : [];
+          if (['admin', 'cashier'].includes(currentProfile?.role)) {
+            allProducts.push(...products.map(product => ({ ...product, _tenantUserId: row.user_id })));
+          } else if (row.user_id === currentUser.id) {
+            originalSetItem(localKey('products'), JSON.stringify(products.map(product => ({ ...product, _tenantUserId: currentUser.id }))));
+          }
+        } else if (DATA_NAMES.includes(row.key) && row.user_id === currentUser.id) {
+          originalSetItem(localKey(row.key), JSON.stringify(row.value ?? []));
+        }
+      }
+      if (['admin', 'cashier'].includes(currentProfile?.role)) {
+        originalSetItem(localKey('products'), JSON.stringify(allProducts));
+      }
+    } finally { hydrating = false; }
+  }
+
+  async function loadProfile(userId = currentUser?.id) {
+    if (!client || !userId) return null;
+    const { data, error } = await client
+      .from('user_profiles')
+      .select('user_id, role, owner_name, owner_code')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error('Profil akun belum tersedia. Jalankan migrasi supabase_schema.sql di Supabase.');
+    currentProfile = data;
+    return data;
+  }
+
+  async function listOwnerAccounts() {
+    await ready;
+    if (!currentProfile || !client) throw new Error('Profil akun belum siap.');
+    let query = client.from('user_profiles').select('user_id, role, owner_name, owner_code').eq('role', 'umkm');
+    if (currentProfile.role === 'umkm') query = query.eq('user_id', currentUser.id);
+    const { data, error } = await query.order('owner_name');
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function listStockMovements() {
+    await ready;
+    if (!client || !currentUser) throw new Error('Silakan login untuk memuat riwayat stok.');
+    const { data, error } = await client
+      .from('stock_movements')
+      .select('id, product_id, product_code, product_name, owner_code, owner_name, movement_type, quantity, gross_amount, occurred_at, sale_id, note, actor_user_id')
+      .order('occurred_at');
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function recordStockMovements(movements) {
+    await ready;
+    if (!client || !currentUser) throw new Error('Silakan login untuk menyimpan riwayat stok.');
+    if (!Array.isArray(movements) || movements.length === 0) return [];
+    const rows = movements.map(movement => ({
+      product_id: String(movement.product_id),
+      product_code: String(movement.product_code || ''),
+      product_name: String(movement.product_name || ''),
+      owner_code: String(movement.owner_code || ''),
+      owner_name: String(movement.owner_name || ''),
+      movement_type: movement.movement_type,
+      quantity: Number(movement.quantity),
+      gross_amount: Math.max(0, Number(movement.gross_amount) || 0),
+      occurred_at: movement.occurred_at || new Date().toISOString(),
+      sale_id: movement.sale_id || null,
+      note: movement.note || null,
+      actor_user_id: currentUser.id
+    }));
+    for (const row of rows) {
+      if (!/^\d{4}$/.test(row.owner_code)) throw new Error('Kode owner harus 4 digit agar riwayat stok dapat dibagikan.');
+      if (!['opening', 'stock_in', 'stock_out', 'sale'].includes(row.movement_type)) {
+        throw new Error('Jenis mutasi stok tidak dikenali.');
+      }
+      if (!Number.isFinite(row.quantity) || row.quantity <= 0) throw new Error('Jumlah mutasi stok harus lebih dari 0.');
+    }
+    const { data, error } = await client.from('stock_movements').insert(rows).select();
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function listOwnerSettlements() {
+    await ready;
+    if (!client || !currentUser) throw new Error('Silakan login untuk memuat status pembayaran.');
+    const { data, error } = await client
+      .from('owner_settlements')
+      .select('owner_code, owner_name, settlement_date, units_sold, gross_amount, paid_at, paid_by')
+      .order('settlement_date', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function listBookkeepingData() {
+    await ready;
+    if (!client || !currentUser || !currentProfile) throw new Error('Silakan login untuk memuat Buku Kas.');
+    const { data, error } = await client.rpc('get_bookkeeping_data');
+    if (error) throw error;
+    if (!data || !Array.isArray(data.cash) || !Array.isArray(data.sales)) {
+      throw new Error('Respons data Buku Kas dari Supabase tidak valid.');
+    }
+    return data;
+  }
+
+  async function markOwnerSettlement({ ownerCode, ownerName, date, unitsSold, grossAmount }) {
+    await ready;
+    if (!client || !currentUser) throw new Error('Silakan login untuk mencatat pembayaran.');
+    if (!['admin', 'cashier'].includes(currentProfile?.role)) {
+      throw new Error('Hanya Admin/Kasir Utama yang dapat menandai pembayaran owner.');
+    }
+    if (!/^\d{4}$/.test(String(ownerCode || ''))) throw new Error('Kode owner harus 4 digit.');
+    const { data, error } = await client.from('owner_settlements').upsert({
+      owner_code: String(ownerCode),
+      owner_name: String(ownerName || ''),
+      settlement_date: date,
+      units_sold: Math.max(0, Number(unitsSold) || 0),
+      gross_amount: Math.max(0, Number(grossAmount) || 0),
+      paid_at: new Date().toISOString(),
+      paid_by: currentUser.id
+    }, { onConflict: 'owner_code,settlement_date' }).select().single();
+    if (error) throw error;
+    return data;
+  }
 
   async function restoreSession() {
     const { data, error } = await client.auth.getSession();
     if (error) throw error;
     session = data.session;
     currentUser = session?.user || null;
-
     if (!currentUser) {
-      currentUser = null;
-      currentBusiness = null;
+      currentProfile = null;
       localStorage.removeItem(CURRENT_KEY);
       localStorage.removeItem(LOGIN_KEY);
       localStorage.removeItem(SESSION_KEY);
-      localStorage.removeItem(BUSINESS_KEY);
-      localStorage.removeItem(ROLE_KEY);
-      return session;
+      return null;
     }
-
+    writeLocal(SESSION_KEY, session);
     writeLocal(CURRENT_KEY, currentUser);
     originalSetItem(LOGIN_KEY, 'true');
-    writeLocal(SESSION_KEY, session);
-
-    // Jangan percaya business_id yang tersimpan di localStorage sebagai sumber
-    // kebenaran. Ambil role + business terbaru dari database setiap kali sesi
-    // dipulihkan, sehingga pindah perangkat/browser tetap konsisten.
-    try {
-      const { data: profile, error: profileError } = await client
-        .from('profiles')
-        .select('role,business_id')
-        .eq('user_id', currentUser.id)
-        .maybeSingle();
-      if (profileError) throw profileError;
-
-      if (profile?.role === 'owner') {
-        await connectOwnerBusiness();
-      } else if (profile?.role === 'umkm' && profile.business_id) {
-        const { data: b, error: bError } = await client
-          .from('businesses')
-          .select('id,owner_id,business_code,name')
-          .eq('id', profile.business_id)
-          .maybeSingle();
-        if (bError) throw bError;
-        if (!b) throw new Error('Usaha yang terhubung tidak ditemukan.');
-        currentBusiness = {
-          role: 'umkm',
-          business_id: b.id,
-          business_code: b.business_code,
-          owner_id: b.owner_id,
-          name: b.name
-        };
-        writeLocal(BUSINESS_KEY, currentBusiness);
-        writeLocal(ROLE_KEY, 'umkm');
-      } else {
-        currentBusiness = null;
-        localStorage.removeItem(BUSINESS_KEY);
-        localStorage.removeItem(ROLE_KEY);
-      }
-    } catch (e) {
-      console.warn('Gagal memulihkan data usaha:', e.message);
-      // Jangan memakai business lama dari browser jika database tidak
-      // mengonfirmasi hubungan akun tersebut.
-      currentBusiness = null;
-      localStorage.removeItem(BUSINESS_KEY);
-      localStorage.removeItem(ROLE_KEY);
-    }
-
-    return session;
-  }
-
-  async function signUp(email, password, name, role = 'owner', businessName = '', businessCode = '') {
-    const cleanEmail = email.trim().toLowerCase();
-    const safeRole = role === 'umkm' ? 'umkm' : 'owner';
-    const meta = { name: name.trim(), role: safeRole };
-    if (safeRole === 'owner') {
-      meta.business_name = businessName.trim() || `${name.trim()} - Usaha`;
-      meta.business_code = String(businessCode || '').trim().toUpperCase();
-    }
-    const { data, error } = await client.auth.signUp({ email: cleanEmail, password, options: { data: meta } });
-    if (error) throw error;
-    session = data.session; currentUser = data.user;
-    if (!session) {
-      return { needsConfirmation: true, user: currentUser, role: safeRole, businessCode: meta.business_code || '' };
-    }
-    writeLocal(SESSION_KEY, session); writeLocal(CURRENT_KEY, currentUser); originalSetItem(LOGIN_KEY, 'true');
-    if (safeRole === 'owner') await connectBusiness(meta.business_code);
-    else { currentBusiness = null; localStorage.removeItem(BUSINESS_KEY); localStorage.removeItem(ROLE_KEY); }
+    await loadProfile(currentUser.id);
     await hydrateCloud();
-    return { needsConfirmation: false, user: currentUser, role: safeRole, businessCode: meta.business_code || '' };
+    return currentUser;
   }
 
-  async function signIn(email, password, businessCode, loginRole = '') {
-    const { data, error } = await client.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+  async function signUp(email, password, name) {
+    const cleanEmail = email.trim().toLowerCase();
+    const { data, error } = await client.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: { data: { name: name.trim() } }
+    });
     if (error) throw error;
-    session = data.session; currentUser = data.user;
-    writeLocal(SESSION_KEY, session); writeLocal(CURRENT_KEY, currentUser); originalSetItem(LOGIN_KEY, 'true');
-    try {
-      const metaRole = currentUser?.user_metadata?.role;
-      let detectedRole = metaRole;
-      if (!detectedRole) {
-        const { data: profile, error: profileError } = await client.from('profiles').select('role').eq('user_id', currentUser.id).maybeSingle();
-        if (profileError) throw profileError;
-        detectedRole = profile?.role || 'owner';
-      }
-      const requestedRole = loginRole === 'umkm' ? 'umkm' : (loginRole === 'owner' ? 'owner' : '');
-      if (requestedRole && detectedRole !== requestedRole) {
-        throw new Error(requestedRole === 'owner'
-          ? 'Akun ini terdaftar sebagai UMKM. Pilih login UMKM.'
-          : 'Akun ini terdaftar sebagai Owner Usaha. Pilih login Owner Usaha.');
-      }
-      if (detectedRole === 'owner') {
-        await connectOwnerBusiness();
-      } else {
-        if (!String(businessCode || '').trim()) throw new Error('Akun UMKM wajib memasukkan kode usaha dari Owner.');
-        await connectBusiness(businessCode);
-      }
-    } catch (e) {
-      try { await client.auth.signOut(); } catch {}
-      session = null; currentUser = null; currentBusiness = null;
-      localStorage.removeItem(SESSION_KEY); localStorage.removeItem(CURRENT_KEY); localStorage.removeItem(LOGIN_KEY); localStorage.removeItem(BUSINESS_KEY); localStorage.removeItem(ROLE_KEY);
-      throw e;
+    session = data.session;
+    if (!session) {
+      currentUser = null;
+      currentProfile = null;
+      return { needsConfirmation: true, user: data.user };
     }
+    currentUser = data.user;
+    await loadProfile(currentUser.id);
+    writeLocal(SESSION_KEY, session);
+    writeLocal(CURRENT_KEY, currentUser);
+    originalSetItem(LOGIN_KEY, 'true');
+    await hydrateCloud();
+    return { needsConfirmation: false, user: currentUser };
+  }
+
+  async function signIn(email, password) {
+    const { data, error } = await client.auth.signInWithPassword({
+      email: email.trim().toLowerCase(), password
+    });
+    if (error) throw error;
+    session = data.session;
+    currentUser = data.user;
+    await loadProfile(currentUser.id);
+    writeLocal(SESSION_KEY, session);
+    writeLocal(CURRENT_KEY, currentUser);
+    originalSetItem(LOGIN_KEY, 'true');
     await hydrateCloud();
     return currentUser;
   }
@@ -318,14 +344,7 @@
       const url = avatarUrl(user);
       el.classList.toggle('has-photo', !!url);
       if (url) {
-        el.textContent = '';
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = `Foto profil ${displayName}`;
-        img.loading = 'lazy';
-        img.decoding = 'async';
-        img.style.cssText = 'position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;display:block!important;object-fit:cover!important;border-radius:50%!important;margin:0!important;padding:0!important;';
-        el.appendChild(img);
+        el.innerHTML = `<img src="${url}" alt="Foto profil ${escapeHtml(displayName)}">`;
       } else {
         el.textContent = user ? initial : 'U';
       }
@@ -353,8 +372,6 @@
     const emailEl = menu.querySelector('[data-profile-email]');
     if (nameEl) nameEl.textContent = name;
     if (emailEl) emailEl.textContent = email;
-    const businessEl = menu.querySelector('[data-profile-business]');
-    if (businessEl) businessEl.textContent = currentBusiness?.business_code ? `Kode Usaha: ${currentBusiness.business_code}` : 'Belum terhubung ke usaha';
   }
 
   function ensureProfileMenu(user) {
@@ -371,12 +388,11 @@
         <div class="profile-menu-info">
           <div class="profile-menu-name" data-profile-name>Akun</div>
           <div class="profile-menu-email" data-profile-email></div>
-          <div class="profile-menu-business" data-profile-business></div>
         </div>
         <button type="button" class="profile-menu-close" aria-label="Tutup">×</button>
       </div>
       <div class="profile-menu-actions">
-        <a class="profile-menu-btn primary" href="profile.html" data-profile-link>👤 Profil Saya</a><button type="button" class="profile-menu-btn primary" data-change-avatar>📷 Ganti Foto Profil</button>
+        <button type="button" class="profile-menu-btn primary" data-change-avatar>📷 Ganti Foto Profil</button>
         <input class="profile-menu-file" data-avatar-input type="file" accept="image/png,image/jpeg,image/webp,image/gif">
         <button type="button" class="profile-menu-btn logout" data-profile-logout>↪ Logout</button>
       </div>
@@ -402,7 +418,12 @@
     });
     menu.querySelector('[data-profile-logout]').addEventListener('click', async () => {
       closeProfileMenu();
-      await logout();
+      try { await logout(); }
+      catch (error) {
+        console.error('Logout gagal:', error);
+        const status = menu.querySelector('[data-profile-status]');
+        if (status) status.textContent = error?.message || 'Logout gagal. Coba lagi.';
+      }
     });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProfileMenu(); });
     renderProfileMenu(user);
@@ -421,29 +442,32 @@
     originalSetItem(LOGIN_KEY, 'true');
   }
 
-  function current() { return currentUser || readLocal(CURRENT_KEY, null); }
+  function current() { return currentUser; }
   function key(name) { return localKey(name); }
   function accounts() { return currentUser ? [currentUser] : []; }
-  function role() { return currentBusiness?.role || readLocal(ROLE_KEY, currentUser?.user_metadata?.role || 'owner'); }
-  function business() { return currentBusiness || readLocal(BUSINESS_KEY, null); }
-  function isUmkm() { return role() === 'umkm'; }
   function read(key, fallback) { return readLocal(key, fallback); }
   function write(key, value) { writeLocal(key, value); }
 
   async function logout() {
-    try { if (client) await client.auth.signOut(); } catch {}
-    session = null; currentUser = null; currentBusiness = null;
+    if (client) {
+      const { error } = await client.auth.signOut();
+      if (error) throw error;
+    }
+    session = null; currentUser = null;
+    currentProfile = null;
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(CURRENT_KEY);
     localStorage.removeItem(LOGIN_KEY);
-    localStorage.removeItem(BUSINESS_KEY);
-    localStorage.removeItem(ROLE_KEY);
     location.href = 'login.html';
   }
 
   async function requireAuth() {
     await ready;
-    if (!current()) { location.replace('login.html'); return false; }
+    if (!current()) {
+      sessionStorage.setItem('kasirTokoAfterLogin', file + location.search);
+      location.replace('login.html');
+      return false;
+    }
     return true;
   }
 
@@ -460,84 +484,122 @@
         writeLocal(CURRENT_KEY, currentUser);
         originalSetItem(LOGIN_KEY, 'true');
       } else {
+        currentProfile = null;
         localStorage.removeItem(SESSION_KEY);
         localStorage.removeItem(CURRENT_KEY);
         localStorage.removeItem(LOGIN_KEY);
       }
     });
     await restoreSession();
-    if (currentUser) await hydrateCloud();
-    if (protectedPages.includes(file) && !currentUser) location.replace('login.html');
-    if (currentUser && isUmkm() && protectedPages.includes(file) && !umkmAllowedPages.includes(file)) location.replace('storage.html');
     return currentUser;
   })();
 
   window.KasirAuth = {
     SUPABASE_URL, SUPABASE_KEY, CURRENT_KEY, LOGIN_KEY,
-    DATA_NAMES, accounts, current, read, write, writeLocalOnly, key, setSession, role, business, isUmkm, connectBusiness, connectOwnerBusiness,
-    logout, requireAuth, signUp, signIn, resetPassword, uploadAvatar, avatarUrl, openProfileMenu, ready,
+    DATA_NAMES, accounts, current, read, write, key, setSession,
+    logout, requireAuth, signUp, signIn, resetPassword, uploadAvatar, loadProfile, listOwnerAccounts,
+    listStockMovements, recordStockMovements, listOwnerSettlements, markOwnerSettlement,
+    listBookkeepingData, ready,
     get session() { return session; },
+    get profile() { return currentProfile; },
+    get role() { return currentProfile?.role || null; },
+    get isAdmin() { return currentProfile?.role === 'admin'; },
+    get isCashier() { return currentProfile?.role === 'cashier'; },
+    get isUmkm() { return currentProfile?.role === 'umkm'; },
     get client() { return client; }
   };
 
   document.addEventListener('DOMContentLoaded', async () => {
-    try { await ready; } catch (error) { console.error('Supabase:', error); }
+    window.addEventListener('kasir:cloud-error', event => {
+      let notice = document.getElementById('cloudSyncError');
+      if (!notice) {
+        notice = document.createElement('div');
+        notice.id = 'cloudSyncError';
+        notice.setAttribute('role', 'alert');
+        notice.style.cssText = 'position:fixed;z-index:9998;bottom:12px;left:12px;right:12px;padding:12px 16px;border-radius:10px;background:#fff0ef;color:#9f2924;font:600 13px system-ui;box-shadow:0 4px 18px #0002';
+        document.body.appendChild(notice);
+      }
+      notice.textContent = `Sinkronisasi gagal; perubahan belum dipastikan tersimpan: ${event.detail?.message || 'Periksa koneksi Supabase.'}`;
+    });
+    try { await ready; } catch (error) {
+      console.error('Supabase:', error);
+      const notice = document.createElement('div');
+      notice.setAttribute('role', 'alert');
+      notice.style.cssText = 'position:fixed;z-index:9999;top:12px;left:12px;right:12px;padding:12px 16px;border-radius:10px;background:#fff0ef;color:#9f2924;font:600 13px system-ui;box-shadow:0 4px 18px #0002';
+      notice.textContent = `Autentikasi/data gagal dimuat: ${error?.message || 'Periksa koneksi dan migrasi Supabase.'}`;
+      document.body.prepend(notice);
+      return;
+    }
     const user = current();
+    if (protectedPages.includes(file) && !user) {
+      sessionStorage.setItem('kasirTokoAfterLogin', file + location.search);
+      location.replace('login.html');
+      return;
+    }
+    if (user && (file === 'login.html' || file === 'register.html')) {
+      location.replace('fitur.html');
+      return;
+    }
     document.querySelectorAll('[data-account-name]').forEach(el => el.textContent = user?.user_metadata?.name || user?.email || 'Akun');
 
-    // Akun terpisah dari tombol Masuk/Logout.
-    // Guest: hanya tombol Masuk. User login: tombol Profil + tombol Logout.
+    // Semua tombol/link "Masuk" di seluruh halaman publik berubah menjadi "Logout"
+    // ketika ada session aktif. Link lain seperti "Mulai Sekarang" tetap menuju fitur.
     const displayName = user?.user_metadata?.name || user?.email || 'Akun';
-    document.querySelectorAll('a.site-account').forEach(link => {
-      const isAppLogin = link.classList.contains('login-button') || link.classList.contains('login-btn');
-      if (!isAppLogin) return;
-      if (!user) {
-        link.innerHTML = '<span class="account-label">Masuk</span>';
-        link.href = 'login.html';
-        link.classList.remove('site-logout');
-        link.onclick = null;
-        return;
-      }
-      // Build separate profile button once.
-      let profileLink = link.previousElementSibling;
-      if (!profileLink || !profileLink.classList.contains('site-profile')) {
-        profileLink = document.createElement('a');
-        profileLink.className = 'site-profile';
-        profileLink.href = 'profile.html';
-        profileLink.setAttribute('aria-label', 'Profil Saya');
-        profileLink.innerHTML = '<span class="account-avatar" data-account-avatar>U</span><span class="profile-label">Profil</span>';
-        link.parentNode.insertBefore(profileLink, link);
-      }
-      const avatar = profileLink.querySelector('[data-account-avatar]');
-      if (avatar) {
+    if (user) ensureProfileMenu(user);
+    const initial = String(displayName).trim().charAt(0).toUpperCase() || 'U';
+
+    document.querySelectorAll('a').forEach(link => {
+      const labelEl = link.querySelector('.account-label');
+      const avatarEl = link.querySelector('[data-account-avatar]');
+      const text = (labelEl?.textContent || link.textContent).trim().replace(/\s+/g, ' ').toLowerCase();
+      const isLoginLink = link.classList.contains('login-button') ||
+                          link.classList.contains('login-btn') ||
+                          link.classList.contains('site-account') ||
+                          link.getAttribute('href') === 'login.html';
+      const isMasukLink = isLoginLink && text.includes('masuk');
+      if (avatarEl) {
         renderAccountAvatars(user);
-        avatar.style.cursor = 'pointer';
-        avatar.onclick = e => { e.preventDefault(); e.stopPropagation(); openProfileMenu(user); };
-        avatar.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProfileMenu(user); } };
+        avatarEl.style.cursor = user ? 'pointer' : 'default';
+        avatarEl.setAttribute('role', user ? 'button' : 'img');
+        avatarEl.setAttribute('tabindex', user ? '0' : '-1');
+        if (user) {
+          avatarEl.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openProfileMenu(user); });
+          avatarEl.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProfileMenu(user); } });
+        }
       }
-      link.innerHTML = '<span class="account-label">Keluar</span>';
-      link.href = '#logout';
-      link.classList.add('site-logout');
-      link.setAttribute('aria-label', `Keluar dari akun ${displayName}`);
-      link.onclick = async e => { e.preventDefault(); await logout(); };
+
+      if (user && isMasukLink) {
+        if (labelEl) labelEl.textContent = 'Logout'; else link.textContent = 'Logout';
+        link.href = '#logout';
+        link.setAttribute('aria-label', `Logout dari akun ${displayName}`);
+        link.onclick = async e => {
+          if (e.target.closest('[data-account-avatar]')) { e.preventDefault(); return; }
+          e.preventDefault();
+          try { await logout(); }
+          catch (error) {
+            console.error('Logout gagal:', error);
+            window.dispatchEvent(new CustomEvent('kasir:cloud-error', { detail: { message: error?.message || 'Logout gagal.' } }));
+          }
+        };
+      } else if (!user && isLoginLink) {
+        if (labelEl) labelEl.textContent = 'Masuk'; else link.textContent = 'Masuk';
+        link.href = 'login.html';
+        link.onclick = null;
+        link.setAttribute('aria-label', 'Masuk ke akun');
+      }
     });
 
     // Tombol ajakan "Mulai Sekarang" pada halaman publik: guest menuju login,
     // user yang sudah login langsung menuju daftar fitur.
     document.querySelectorAll('a[href="login.html"]').forEach(link => {
       const text = link.textContent.trim().toLowerCase();
-      const isMasuk = text.includes('masuk');
+      const isMasuk = text.includes('masuk') || link.classList.contains('login-button') ||
+        link.classList.contains('login-btn') || link.classList.contains('site-account');
       if (user && !isMasuk) {
         link.href = 'fitur.html';
-        if (text.includes('mulai')) {
-          link.innerHTML = 'Buka Fitur <span>→</span>';
-        }
+        if (text.includes('mulai')) link.innerHTML = 'Buka Fitur <span>→</span>';
       }
     });
 
-    // Jika user sudah login lalu membuka login/register, arahkan ke daftar fitur.
-    if (user && (file === 'login.html' || file === 'register.html')) {
-      location.replace('fitur.html');
-    }
   });
 })();

@@ -12,7 +12,7 @@
 .site-nav a.active::after{content:"";position:absolute;left:0;right:0;bottom:15px;height:3px;border-radius:99px;background:#67b847}
 .site-account{min-width:104px;height:40px;padding:0 14px;border-radius:24px;display:flex!important;align-items:center;justify-content:center;gap:8px;text-decoration:none!important;color:#fff!important;background:linear-gradient(135deg,#6bc346,#54ad3c);box-shadow:0 7px 17px rgba(82,174,61,.2);font-size:12px!important;font-weight:700!important}
 .site-account:hover{color:#fff!important;transform:translateY(-1px)}
-.account-avatar{width:26px;height:26px;min-width:26px;min-height:26px;max-width:26px;max-height:26px;aspect-ratio:1/1;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.95);color:#54a83d;font-size:10px;font-weight:800;flex:0 0 26px;overflow:hidden;box-sizing:border-box;position:relative}
+.account-avatar{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.95);color:#54a83d;font-size:10px;font-weight:800;flex-shrink:0}
 .account-label{line-height:1}
 .site-menu-toggle{display:none;border:0;background:transparent;cursor:pointer;width:42px;height:42px;border-radius:10px}
 .site-menu-toggle span{display:block;width:24px;height:3px;margin:4px auto;border-radius:99px;background:#075b43}
@@ -60,23 +60,7 @@
 .profile-menu-note{font-size:10px;color:#8b9690;text-align:center;margin-top:9px;line-height:1.5}
 .profile-menu-status{font-size:11px;text-align:center;min-height:16px;color:#4f6e57}
 .account-avatar.has-photo{background:#fff;padding:0}
-.account-avatar img{width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;max-width:26px!important;max-height:26px!important;display:block;object-fit:cover;object-position:center;border-radius:50%;margin:0;padding:0;box-sizing:border-box}
+.account-avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
 @media(max-width:850px){
   .profile-menu{top:68px;right:15px;left:15px;width:auto;max-width:none}
 }
-
-/* Mobile/hosting hardening */
-html,body{width:100%;min-width:0;overflow-x:hidden}
-.site-navbar,.site-navbar-inner,.site-nav,.site-account{box-sizing:border-box}
-.account-avatar{position:relative!important;overflow:hidden!important;contain:paint!important;line-height:0!important;flex:0 0 26px!important}
-.account-avatar img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;object-fit:cover!important;display:block!important;margin:0!important;padding:0!important}
-@media(max-width:850px){.site-navbar-inner{max-width:100%;}.site-brand{min-width:0}.site-menu-toggle{flex:0 0 42px}}
-.profile-menu-business{margin-top:5px;font-size:10px;font-weight:800;color:#4b9344;word-break:break-word}
-
-/* Separate account controls: Profil is independent from Masuk/Keluar. */
-.site-profile{height:40px;min-width:40px;padding:0 12px;border-radius:22px;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none!important;background:#f2f9ed;border:1px solid #dcefd4;color:#3f8e39!important;font:700 12px Poppins,Arial,sans-serif;box-sizing:border-box;cursor:pointer}
-.site-profile:hover{background:#e9f6e2;color:#327c31!important}
-.site-profile .account-avatar{width:26px;height:26px;flex:0 0 26px}
-.site-logout{min-width:82px!important;background:linear-gradient(135deg,#6bc346,#54ad3c)!important}
-.profile-label{line-height:1}
-@media(max-width:850px){.site-nav .site-profile,.site-nav .site-logout{width:100%;justify-content:center;margin-top:8px}.site-nav .site-logout{margin-bottom:4px}}

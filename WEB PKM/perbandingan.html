@@ -76,7 +76,6 @@ td{padding:10px;border-top:1px solid var(--line);vertical-align:top}
 @media(max-width:650px){.app{padding:14px 11px}.nav a{padding:8px 7px;font-size:10px}.hero h2{font-size:24px}.grid3,.stats,.form,.compare{grid-template-columns:1fr}.full{grid-column:auto}.scanner-box{grid-template-columns:1fr}}
 </style>    <script src="auth.js"></script>
 <link rel="stylesheet" href="shared-navbar.css">
-<link rel="stylesheet" href="responsive.css">
 </head><body><div class="app">
 <header class="site-navbar app-site-navbar"><div class="site-navbar-inner">
 <a href="index.html" class="site-brand"><img src="logo.png" alt="Web PKM"><span class="site-brand-text"><strong>Our Journey</strong><small>Sistem Kasir Online</small></span></a>
@@ -86,41 +85,81 @@ td{padding:10px;border-top:1px solid var(--line);vertical-align:top}
 <a href="login.html" class="site-account login-button"><span class="account-avatar" data-account-avatar>U</span><span class="account-label">Masuk</span></a>
 </nav></div></header>
 
-<div class="hero"><h2><span>Perbandingan</span> Keuntungan & Kinerja</h2><p>Bandingkan dua hari atau dua periode untuk melihat perubahan omzet, modal/HPP, laba kotor, jumlah transaksi, dan unit terjual.</p><div class="note">📈 Pilih metrik dan dua tanggal. Sistem menghitung perbandingan dari transaksi yang tercatat di Kasir.</div></div>
+<div class="hero"><h2><span>Perbandingan</span> Keuntungan & Kinerja</h2><p>Bandingkan hasil pada dua tanggal untuk melihat perubahan omzet, modal/HPP, laba kotor, jumlah transaksi, dan unit terjual.</p><div class="note">📈 Tanggal A adalah tanggal acuan (hasil awal). Tanggal B adalah tanggal yang dibandingkan dengannya. Selisih dihitung sebagai hasil tanggal B dikurangi hasil tanggal A: tanda + berarti naik, tanda − berarti turun. Data dihitung dari transaksi Kasir.</div></div>
 <div class="card" style="margin-top:16px"><div class="form">
 <div><label class="label">Metrik</label><select id="metric"><option value="revenue">Omzet Penjualan</option><option value="profit">Laba Kotor</option><option value="cost">HPP / Modal Barang Terjual</option><option value="transactions">Jumlah Transaksi</option><option value="units">Unit Terjual</option></select></div>
-<div></div><div><label class="label">Tanggal / Periode A</label><input id="a" type="date"></div><div><label class="label">Tanggal / Periode B</label><input id="b" type="date"></div>
+<div id="comparisonOwnerWrap"><label class="label" for="comparisonOwner">Owner / UMKM Penitip</label><select id="comparisonOwner"><option value="">Semua Owner</option></select></div><div><label class="label" for="a">Tanggal acuan (A) · dibandingkan dari</label><input id="a" type="date"></div><div><label class="label" for="b">Tanggal pembanding (B) · dibandingkan ke</label><input id="b" type="date"></div>
 <div class="full"><button id="compare" class="btn primary" style="width:100%">🔎 Bandingkan</button></div></div></div>
+<div id="comparisonNotice" class="small" role="status" style="margin-top:10px"></div>
 <div id="result" class="compare" style="margin-top:16px"></div>
-<div class="card" style="margin-top:16px"><div class="title"><h3>Perbandingan Per Hari</h3><span class="tag">Visual</span></div><div class="chart-wrap"><canvas id="chart"></canvas></div></div>
+<div class="card" style="margin-top:16px"><div class="title"><h3>Grafik hasil per tanggal</h3><span class="tag">Visual</span></div><div class="small" style="margin-bottom:10px">Grafik menampilkan nilai metrik pada setiap tanggal di antara tanggal A dan tanggal B.</div><div class="chart-wrap"><canvas id="chart"></canvas></div></div>
 
 </div><div id="toast" class="toast"></div><script>
 KasirAuth.ready.then(async () => {
-const STORE={
- products:KasirAuth.key("products"),
- sales:KasirAuth.key("sales"),
- cash:KasirAuth.key("cash"),
- expenses:KasirAuth.key("expenses")
-};
 const $=id=>document.getElementById(id);
-const load=(k,d=[])=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
-const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 const rp=n=>"Rp "+Number(n||0).toLocaleString("id-ID");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const today=()=>new Date().toISOString().slice(0,10);
 const toast=s=>{let t=$("toast");if(!t)return;t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)};
 const fmtDate=d=>new Date(d).toLocaleDateString("id-ID",{day:"2-digit",month:"2-digit",year:"numeric"});
 
-let sales=load(STORE.sales,[]),chart=null;$("a").value=today();let d=new Date();d.setDate(d.getDate()-1);$("b").value=d.toISOString().slice(0,10);
-function value(date,metric){let ss=sales.filter(s=>s.date.slice(0,10)===date);if(metric==="transactions")return ss.length;if(metric==="units")return ss.reduce((a,s)=>a+s.items.reduce((q,i)=>q+i.qty,0),0);if(metric==="cost")return ss.reduce((a,s)=>a+s.items.reduce((q,i)=>q+i.cost*i.qty,0),0);if(metric==="profit")return ss.reduce((a,s)=>a+s.items.reduce((q,i)=>q+(i.price-i.cost)*i.qty,0),0);return ss.reduce((a,s)=>a+s.total,0)}
+let sales=[],chart=null;let d=new Date();d.setDate(d.getDate()-1);$("a").value=d.toISOString().slice(0,10);$("b").value=today();
+const isManager=["admin","cashier"].includes(KasirAuth.role);
+if(!isManager)$("comparisonOwnerWrap").style.display="none";
+function value(date,metric){
+ const selectedOwner=$("comparisonOwner").value;
+ const matching=sales.filter(s=>s.date.slice(0,10)===date).map(s=>({
+  ...s,
+  items:s.items.filter(item=>!selectedOwner||item.ownerCode===selectedOwner)
+ })).filter(s=>s.items.length);
+ if(metric==="transactions")return new Set(matching.map(s=>s.id)).size;
+ if(metric==="units")return matching.reduce((sum,s)=>sum+s.items.reduce((qty,item)=>qty+item.qty,0),0);
+ if(metric==="cost")return matching.reduce((sum,s)=>sum+s.items.reduce((qty,item)=>qty+item.cost*item.qty,0),0);
+ if(metric==="profit")return matching.reduce((sum,s)=>sum+s.items.reduce((qty,item)=>qty+(item.price-item.cost)*item.qty,0),0);
+ return matching.reduce((sum,s)=>sum+s.items.reduce((amount,item)=>amount+item.total,0),0);
+}
+function populateOwnerFilter(){
+ const select=$("comparisonOwner"),owners=new Map();
+ sales.forEach(sale=>sale.items.forEach(item=>{
+  if(item.ownerCode)owners.set(item.ownerCode,`${item.ownerCode} · ${item.owner||"UMKM"}`);
+ }));
+ select.innerHTML='<option value="">Semua Owner</option>'+[...owners].sort((a,b)=>a[0].localeCompare(b[0])).map(([code,name])=>`<option value="${esc(code)}">${esc(name)}</option>`).join("");
+}
+async function loadSales(){
+ $("comparisonNotice").textContent="Memuat data penjualan sesuai hak akses...";
+ $("compare").disabled=true;
+ try{
+  const data=await KasirAuth.listBookkeepingData(),grouped=new Map();
+  data.sales.forEach(item=>{
+   const saleId=String(item.sale_id||"");
+   if(!saleId||!item.date)return;
+   if(!grouped.has(saleId))grouped.set(saleId,{id:saleId,date:item.date,items:[]});
+   grouped.get(saleId).items.push({
+    name:item.name||"",ownerCode:String(item.owner_code||""),owner:item.owner_name||"",
+    qty:Number(item.qty)||0,price:Number(item.price)||0,cost:Number(item.cost)||0,total:Number(item.total)||0
+   });
+  });
+  sales=[...grouped.values()];
+  populateOwnerFilter();
+  $("comparisonNotice").textContent=sales.length?"Data dibatasi sesuai role akun. Untuk UMKM, hasil hanya mencakup produk dengan kode owner akun ini.":"Belum ada data penjualan yang dapat dibandingkan.";
+  render();
+ }catch(error){
+  console.error("Data perbandingan gagal dimuat:",error);
+  sales=[];
+  $("comparisonNotice").textContent=`Data perbandingan tidak dapat dimuat: ${error.message}`;
+  $("result").innerHTML="";
+  if(chart){chart.destroy();chart=null}
+ }finally{$("compare").disabled=false}
+}
 function label(metric){return {revenue:"Omzet Penjualan",profit:"Laba Kotor",cost:"HPP / Modal Barang",transactions:"Jumlah Transaksi",units:"Unit Terjual"}[metric]}
 function render(){
- let m=$("metric").value,A=$("a").value,B=$("b").value,va=value(A,m),vb=value(B,m),diff=vb-va,pct=va?diff/va*100:0;
- $("result").innerHTML=`<div class="compare-box"><h4>Hari A · ${fmtDate(A)}</h4><div class="big">${m==="transactions"||m==="units"?va:rp(va)}</div><div class="small">${label(m)}</div></div><div class="compare-box"><h4>Hari B · ${fmtDate(B)}</h4><div class="big">${m==="transactions"||m==="units"?vb:rp(vb)}</div><div class="small">${label(m)} · perubahan ${diff>=0?"+":""}${m==="transactions"||m==="units"?diff:rp(diff)} (${isFinite(pct)?pct.toFixed(1):0}%)</div></div>`;
+ let m=$("metric").value,A=$("a").value,B=$("b").value,va=value(A,m),vb=value(B,m),diff=vb-va,pct=va?diff/va*100:null;
+ const numberMetric=m==="transactions"||m==="units",formattedDiff=numberMetric?`${diff>=0?"+":""}${diff}`:`${diff>=0?"+":""}${rp(diff)}`,changeNote=`Perubahan dari A ke B: ${formattedDiff}${pct===null?" (persentase tidak tersedia karena nilai A = 0)":` (${pct>=0?"+":""}${pct.toFixed(1)}%)`}`;
+ $("result").innerHTML=`<div class="compare-box"><h4>Nilai acuan (A) · ${fmtDate(A)}</h4><div class="big">${numberMetric?va:rp(va)}</div><div class="small">${label(m)} pada tanggal acuan</div></div><div class="compare-box"><h4>Nilai pembanding (B) · ${fmtDate(B)}</h4><div class="big">${numberMetric?vb:rp(vb)}</div><div class="small">${label(m)} pada tanggal pembanding. ${changeNote}</div></div>`;
  let days=[],start=new Date(A),end=new Date(B);if(start>end)[start,end]=[end,start];for(let x=new Date(start);x<=end;x.setDate(x.getDate()+1))days.push(x.toISOString().slice(0,10));
  if(chart)chart.destroy();chart=new Chart($("chart"),{type:"bar",data:{labels:days.map(x=>x.slice(5)),datasets:[{label:label(m),data:days.map(x=>value(x,m))}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>(m==="transactions"||m==="units")?v:"Rp "+Number(v).toLocaleString("id-ID")}}}}});
 }
-$("compare").onclick=render;$("metric").onchange=render;window.addEventListener("storage",()=>{sales=load(STORE.sales,[]);render()});render();
+$("compare").onclick=render;$("metric").onchange=render;$("comparisonOwner").onchange=render;window.addEventListener("storage",()=>{void loadSales()});void loadSales();
 });
 </script><script src="shared-navbar.js"></script>
 </body></html>
