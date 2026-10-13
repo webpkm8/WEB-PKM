@@ -1,6 +1,6 @@
 (() => {
   const $ = id => document.getElementById(id);
-  const form = $('loginForm'), email = $('email'), password = $('password');
+  const form = $('loginForm'), email = $('email'), password = $('password'), role = $('loginRole');
   const toggle = $('passwordToggle'), button = $('loginButton'), forgot = $('forgotPassword');
   const emailError = $('emailError'), passError = $('passwordError'), status = $('authStatus');
   if (!form || !email || !password) return;
@@ -13,12 +13,14 @@
     if (!password.value) { passError.textContent = 'Password wajib diisi.'; valid = false; }
     else if (password.value.length < 6) { passError.textContent = 'Password minimal 6 karakter.'; valid = false; }
     else passError.textContent = '';
+    if (!role || !['admin', 'cashier', 'umkm'].includes(role.value)) { showStatus('Pilih jenis akun untuk login.'); valid = false; }
     return valid;
   };
   const friendlyError = err => {
     const raw = String(err?.message || err || '').trim();
     const low = raw.toLowerCase();
     if (low.includes('invalid login credentials')) return 'Email atau password salah.';
+    if (low.includes('role akun tidak sesuai')) return raw;
     if (low.includes('email not confirmed')) return 'Email belum dikonfirmasi. Cek inbox email kamu.';
     if (low.includes('failed to fetch') || low.includes('network')) return 'Tidak dapat terhubung ke Supabase. Periksa internet dan jalankan lewat Live Server.';
     if (low.includes('invalid api key') || low.includes('apikey')) return 'Kunci Supabase tidak valid. Periksa konfigurasi auth.js.';
@@ -30,7 +32,7 @@
     button.disabled = true; button.textContent = 'Memproses...';
     try {
       await KasirAuth.ready;
-      await KasirAuth.signIn(email.value, password.value);
+      await KasirAuth.signIn(email.value, password.value, role.value);
       const requestedTarget = sessionStorage.getItem('kasirTokoAfterLogin') || 'fitur.html';
       const target = /^[a-z0-9-]+\.html(?:\?[a-z0-9=&_%.-]*)?$/i.test(requestedTarget) ? requestedTarget : 'fitur.html';
       sessionStorage.removeItem('kasirTokoAfterLogin');
