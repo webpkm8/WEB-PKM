@@ -22,6 +22,15 @@
   </section>
   <form class="login-card" id="loginForm" novalidate>
     <div class="form-group">
+      <label for="loginRole">Login sebagai</label>
+      <select id="loginRole" name="role" class="login-role" required>
+        <option value="umkm">UMKM / Owner</option>
+        <option value="cashier">Kasir</option>
+        <option value="admin">Admin</option>
+      </select>
+      <small class="role-hint">Pilihan ini akan dicocokkan dengan role akun yang terdaftar.</small>
+    </div>
+    <div class="form-group">
       <label for="email">Email</label>
       <div class="input-wrapper">
         <span class="input-icon">✉</span>
