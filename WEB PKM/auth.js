@@ -278,36 +278,14 @@
     return { needsConfirmation: false, user: currentUser };
   }
 
-  async function signIn(email, password, expectedRole) {
-    if (!['admin', 'cashier', 'umkm'].includes(expectedRole)) {
-      throw new Error('Pilih role login yang valid.');
-    }
+  async function signIn(email, password) {
     const { data, error } = await client.auth.signInWithPassword({
       email: email.trim().toLowerCase(), password
     });
     if (error) throw error;
     session = data.session;
     currentUser = data.user;
-    try {
-      await loadProfile(currentUser.id);
-      if (currentProfile.role !== expectedRole) {
-        throw new Error('Role akun tidak sesuai dengan pilihan login. Pilih role yang terdaftar untuk akun ini.');
-      }
-    } catch (error) {
-      if (currentUser) {
-        const { error: signOutError } = await client.auth.signOut();
-        session = null;
-        currentUser = null;
-        currentProfile = null;
-        localStorage.removeItem(SESSION_KEY);
-        localStorage.removeItem(CURRENT_KEY);
-        localStorage.removeItem(LOGIN_KEY);
-        if (signOutError) {
-          throw new Error(`${error.message} Sesi belum dapat ditutup: ${signOutError.message}`);
-        }
-      }
-      throw error;
-    }
+    await loadProfile(currentUser.id);
     writeLocal(SESSION_KEY, session);
     writeLocal(CURRENT_KEY, currentUser);
     originalSetItem(LOGIN_KEY, 'true');
